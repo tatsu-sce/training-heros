@@ -3,12 +3,12 @@ import { supabase } from '../../lib/supabaseClient';
 import { useAuth } from '../../contexts/AuthContext';
 
 const EQUIPMENT_LIST = [
-    { id: 'bench1', name: 'Bench Press', image: 'https://placehold.co/400x300/1e3a8a/white?text=Bench+Press' },
-    { id: 'rack1', name: 'Squat Rack', image: 'https://placehold.co/400x300/1e3a8a/white?text=Squat+Rack' },
-    { id: 'platform1', name: 'Deadlift Platform', image: 'https://placehold.co/400x300/1e3a8a/white?text=Deadlift' },
-    { id: 'dumbbells', name: 'Dumbbell Area', image: 'https://placehold.co/400x300/1e3a8a/white?text=Dumbbells' },
-    { id: 'cable', name: 'Cable Machine', image: 'https://placehold.co/400x300/1e3a8a/white?text=Cable+Machine' },
-    { id: 'treadmill', name: 'Treadmill', image: 'https://placehold.co/400x300/1e3a8a/white?text=Treadmill' }
+    { id: 'bench1', name: 'ベンチプレス', image: 'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=400&q=80' },
+    { id: 'rack1', name: 'スクワットラック', image: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=400&q=80' },
+    { id: 'platform1', name: 'デッドリフト台', image: 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=400&q=80' },
+    { id: 'dumbbells', name: 'ダンベルエリア', image: 'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=400&q=80' },
+    { id: 'cable', name: 'ケーブルマシン', image: 'https://images.unsplash.com/photo-1540497077202-7c8a3999166f?w=400&q=80' },
+    { id: 'treadmill', name: 'ランニングマシン', image: 'https://images.unsplash.com/photo-1576678927484-cc907957088c?w=400&q=80' }
 ];
 
 const EquipmentTimer = () => {
