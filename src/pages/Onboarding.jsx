@@ -14,17 +14,33 @@ const Onboarding = () => {
     // Form States
     const [nickname, setNickname] = useState('');
     const [fitnessGoal, setFitnessGoal] = useState('General Fitness');
+    const [height, setHeight] = useState('');
+    const [weight, setWeight] = useState('');
 
     const handleComplete = async () => {
         if (!user) return;
         setLoading(true);
 
         try {
+            // Calculate initial Estimation
+            const h = parseFloat(height) || 170;
+            const w = parseFloat(weight) || 60;
+            const bmi = w / ((h / 100) * (h / 100));
+
+            // Rough estimation for initial avatar state
+            let initialBodyFat = 15;
+            if (bmi > 25) initialBodyFat = 25;
+            else if (bmi < 18.5) initialBodyFat = 10;
+
             const updates = {
                 id: user.id,
                 display_name: nickname,
                 fitness_goal: fitnessGoal,
-                // updated_at removed to prevent SQL error if column missing
+                height: h,
+                weight: w,
+                body_fat: initialBodyFat,
+                last_workout_at: new Date(),
+                // updated_at removed
             };
 
             const { error } = await supabase
@@ -43,6 +59,8 @@ const Onboarding = () => {
         }
     };
 
+    const isStep3Valid = height && weight && !isNaN(height) && !isNaN(weight);
+
     return (
         <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--color-bg-deep)', padding: '1rem' }}>
             <div className="glass-panel" style={{ width: '100%', maxWidth: '500px', padding: '2rem' }}>
@@ -51,7 +69,7 @@ const Onboarding = () => {
 
                 {/* Step Indicators */}
                 <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '2rem', justifyContent: 'center' }}>
-                    {[1, 2, 3].map(i => (
+                    {[1, 2, 3, 4].map(i => (
                         <div key={i} style={{
                             width: '30px', height: '4px', borderRadius: '2px',
                             background: step >= i ? 'var(--color-primary)' : 'rgba(255,255,255,0.1)'
@@ -120,8 +138,61 @@ const Onboarding = () => {
                     </div>
                 )}
 
-                {/* Step 3: Class Schedule (Uses ScheduleEditor) */}
+                {/* Step 3: Height & Weight */}
                 {step === 3 && (
+                    <div className="fade-in">
+                        <div style={{ marginBottom: '1.5rem' }}>
+                            <h3 style={{ fontSize: '1.1rem', marginBottom: '1rem' }}>Body Stats</h3>
+                            <p style={{ fontSize: '0.9rem', color: 'var(--color-text-muted)', marginBottom: '1.5rem' }}>
+                                This info helps us generate your initial avatar.
+                            </p>
+
+                            <label style={{ display: 'block', marginBottom: '1rem' }}>
+                                <span style={{ color: 'var(--color-text-dim)', fontSize: '0.9rem' }}>Height (cm) ~ Approx.</span>
+                                <input
+                                    type="number"
+                                    value={height}
+                                    onChange={(e) => setHeight(e.target.value)}
+                                    placeholder="e.g. 170"
+                                    style={{
+                                        width: '100%', padding: '0.8rem', marginTop: '0.5rem',
+                                        background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)',
+                                        borderRadius: '8px', color: 'white'
+                                    }}
+                                />
+                            </label>
+
+                            <label style={{ display: 'block', marginBottom: '1rem' }}>
+                                <span style={{ color: 'var(--color-text-dim)', fontSize: '0.9rem' }}>Weight (kg) ~ Approx.</span>
+                                <input
+                                    type="number"
+                                    value={weight}
+                                    onChange={(e) => setWeight(e.target.value)}
+                                    placeholder="e.g. 60"
+                                    style={{
+                                        width: '100%', padding: '0.8rem', marginTop: '0.5rem',
+                                        background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)',
+                                        borderRadius: '8px', color: 'white'
+                                    }}
+                                />
+                            </label>
+                        </div>
+                        <div style={{ display: 'flex', gap: '1rem' }}>
+                            <button className="btn-secondary" style={{ flex: 1 }} onClick={() => setStep(2)}>Back</button>
+                            <button
+                                className="btn-primary"
+                                style={{ flex: 1 }}
+                                onClick={() => setStep(4)}
+                                disabled={!isStep3Valid}
+                            >
+                                Next
+                            </button>
+                        </div>
+                    </div>
+                )}
+
+                {/* Step 4: Class Schedule */}
+                {step === 4 && (
                     <div className="fade-in">
                         <div style={{ marginBottom: '1.5rem' }}>
                             <span style={{ color: 'var(--color-text-dim)', fontSize: '0.9rem', display: 'block', marginBottom: '0.5rem' }}>Set your Class Schedule (Tap Busy Slots)</span>
@@ -130,7 +201,7 @@ const Onboarding = () => {
                             </div>
                         </div>
                         <div style={{ display: 'flex', gap: '1rem' }}>
-                            <button className="btn-secondary" style={{ flex: 1 }} onClick={() => setStep(2)}>Back</button>
+                            <button className="btn-secondary" style={{ flex: 1 }} onClick={() => setStep(3)}>Back</button>
                             <button
                                 className="btn-primary"
                                 style={{ flex: 1 }}

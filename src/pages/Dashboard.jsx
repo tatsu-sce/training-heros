@@ -24,7 +24,7 @@ const Dashboard = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const occupancyData = useOccupancy();
-  const { stats: muscleStats, profile, trainMuscle } = useMuscleStats();
+  const { stats: muscleStats, bodyStats, profile, trainMuscle } = useMuscleStats();
   const [isQRModalOpen, setIsQRModalOpen] = useState(false);
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
   const [isInquiryModalOpen, setIsInquiryModalOpen] = useState(false);
@@ -202,7 +202,7 @@ const Dashboard = () => {
           </div>
 
           <div style={{ flex: 1, position: 'relative' }}>
-            <AvatarScene muscleStats={muscleStats} />
+            <AvatarScene muscleStats={muscleStats} bodyStats={bodyStats} />
             <div style={{ position: 'absolute', bottom: '1rem', left: '0', width: '100%', display: 'flex', justifyContent: 'center', gap: '0.5rem', flexWrap: 'wrap', padding: '0 0.5rem' }}>
               {[
                 { label: 'Chest', key: 'chest' },
