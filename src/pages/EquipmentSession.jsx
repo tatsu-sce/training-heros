@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import EquipmentTimer from '../components/dashboard/EquipmentTimer';
+import EquipmentSelection from '../components/dashboard/EquipmentSelection';
 import QRScanner from '../components/dashboard/QRScanner';
 import Modal from '../components/ui/Modal';
 import { supabase } from '../lib/supabaseClient';
@@ -10,18 +11,15 @@ const EquipmentSession = () => {
     const { t } = useTranslation();
     const navigate = useNavigate();
     const [isScannerOpen, setIsScannerOpen] = useState(false);
-    const [scanResult, setScanResult] = useState('');
-    const isProcessingRef = React.useRef(false); // Lock to prevent multiple scans
+    const [selectedEquipment, setSelectedEquipment] = useState(null);
+    const isProcessingRef = React.useRef(false);
 
     const handleExitScan = async (decodedText) => {
-        // Prevent multiple scans
         if (isProcessingRef.current) return;
         isProcessingRef.current = true;
-        // Do NOT close immediately: setIsScannerOpen(false);
 
         console.log("Exit Scan:", decodedText);
         
-        // Check-out Logic (EquipmentSession only accepts check-out)
         if (decodedText === 'gym_check_out') {
             try {
                 const { data, error } = await supabase.rpc('handle_occupancy', { 
@@ -34,20 +32,23 @@ const EquipmentSession = () => {
 
                 setIsScannerOpen(false); 
                 isProcessingRef.current = false;
-                navigate('/'); // Return to dashboard
+                navigate('/');
             } catch (err) {
                 console.error("Error handling exit scan:", err);
                 alert(`Failed: ${err.message || 'Unknown error'}`);
                 isProcessingRef.current = false; 
             }
         } else {
-            // Invalid QR code for check-out context
             setIsScannerOpen(false);
             isProcessingRef.current = false;
             setTimeout(() => {
                 alert('退出用QRコードのみ有効です');
             }, 100);
         }
+    };
+
+    const handleEquipmentSelect = (equipment) => {
+        setSelectedEquipment(equipment);
     };
 
     return (
@@ -61,27 +62,50 @@ const EquipmentSession = () => {
                 </button>
                 <div style={{ display: 'flex', gap: '1rem' }}>
                     <button
-                        className="btn-secondary"
                         onClick={() => setIsScannerOpen(true)}
-                        style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', border: '1px solid var(--color-error)', color: 'var(--color-error)' }}
+                        style={{ 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            gap: '0.5rem', 
+                            padding: '0.6rem 1.2rem',
+                            borderRadius: '2rem',
+                            background: 'rgba(239, 68, 68, 0.1)',
+                            border: '1px solid rgba(239, 68, 68, 0.3)',
+                            color: '#ef4444',
+                            cursor: 'pointer',
+                            fontSize: '0.9rem',
+                            fontWeight: 'bold',
+                            transition: 'all 0.2s'
+                        }}
+                        className="btn-exit-scan"
                     >
-                        <span>⏏️</span> End/Exit (Scan)
+                        <span>⏏️</span> 退出スキャン
                     </button>
                 </div>
             </header>
 
-            <h1 className="gradient-text" style={{ fontSize: '2rem', marginBottom: '1.5rem', textAlign: 'center' }}>Equipment Session</h1>
+            {!selectedEquipment ? (
+                /* Equipment Selection View */
+                <div className="glass-panel" style={{ padding: '2rem' }}>
+                    <EquipmentSelection onSelect={handleEquipmentSelect} />
+                </div>
+            ) : null}
 
-            {/* Equipment Timer & Logger */}
-            <div className="glass-panel" style={{ padding: '1.5rem', marginBottom: '2rem' }}>
-                <EquipmentTimer />
-            </div>
-
-            {/* Helper Text */}
-            <p style={{ textAlign: 'center', color: 'var(--color-text-dim)', fontSize: '0.9rem' }}>
-                Record your sets, reps, and time. When finished with this station, <br />
-                scan the exit QR code or the next equipment's QR code.
-            </p>
+            {/* Logging Modal */}
+            <Modal 
+                isOpen={!!selectedEquipment} 
+                onClose={() => setSelectedEquipment(null)} 
+                title="Workout Record"
+            >
+                {selectedEquipment && (
+                    <EquipmentTimer 
+                        equipment={selectedEquipment} 
+                        onSave={() => {
+                            setSelectedEquipment(null);
+                        }}
+                    />
+                )}
+            </Modal>
 
             {/* Exit Scanner Modal */}
             <Modal isOpen={isScannerOpen} onClose={() => { setIsScannerOpen(false); isProcessingRef.current = false; }} title="Scan to Exit / Switch">

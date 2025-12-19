@@ -1,0 +1,184 @@
+[
+    {
+        "id": "chest-press",
+        "name": "チェストプレス",
+        "category": "machine",
+        "targetMuscles": [
+            "胸",
+            "腕"
+        ],
+        "description": "胸と腕を鍛えるマシン",
+        "image": "/images/equipment/chest-press.png"
+    },
+    {
+        "id": "pec-fly",
+        "name": "ペックフライ",
+        "category": "machine",
+        "targetMuscles": [
+            "胸",
+            "肩"
+        ],
+        "description": "胸と肩の後ろを鍛えるマシン",
+        "image": "/images/equipment/pec-fly.png"
+    },
+    {
+        "id": "lat-pulldown",
+        "name": "ラットプルダウン",
+        "category": "machine",
+        "targetMuscles": [
+            "背中"
+        ],
+        "description": "背中を鍛えるマシン",
+        "image": "/images/equipment/lat-pulldown.png"
+    },
+    {
+        "id": "seated-rowing",
+        "name": "シーテッドローイング",
+        "category": "machine",
+        "targetMuscles": [
+            "背中"
+        ],
+        "description": "背中を鍛えるマシン",
+        "image": "/images/equipment/seated-rowing.png"
+    },
+    {
+        "id": "shoulder-press",
+        "name": "ショルダープレス",
+        "category": "machine",
+        "targetMuscles": [
+            "肩"
+        ],
+        "description": "肩を鍛えるマシン",
+        "image": "/images/equipment/shoulder-press.png"
+    },
+    {
+        "id": "arm-curl",
+        "name": "アームカール",
+        "category": "machine",
+        "targetMuscles": [
+            "腕"
+        ],
+        "description": "腕を鍛えるマシン",
+        "image": "/images/equipment/arm-curl.png"
+    },
+    {
+        "id": "sit-up-bench",
+        "name": "シットアップベンチ",
+        "category": "machine",
+        "targetMuscles": [
+            "腹筋"
+        ],
+        "description": "お腹を鍛えるマシン"
+    },
+    {
+        "id": "back-extension",
+        "name": "バックエクステンション",
+        "category": "machine",
+        "targetMuscles": [
+            "背中"
+        ],
+        "description": "背中を鍛えるマシン"
+    },
+    {
+        "id": "leg-press",
+        "name": "レッグプレス",
+        "category": "machine",
+        "targetMuscles": [
+            "脚"
+        ],
+        "description": "脚全体を鍛えるマシン"
+    },
+    {
+        "id": "leg-extension",
+        "name": "レッグエクステンション",
+        "category": "machine",
+        "targetMuscles": [
+            "太もも前"
+        ],
+        "description": "太もも前を鍛えるマシン"
+    },
+    {
+        "id": "leg-curl",
+        "name": "レッグカール",
+        "category": "machine",
+        "targetMuscles": [
+            "太もも後"
+        ],
+        "description": "太もも後を鍛えるマシン"
+    },
+    {
+        "id": "inner-thigh",
+        "name": "インナーサイ",
+        "category": "machine",
+        "targetMuscles": [
+            "太もも内側"
+        ],
+        "description": "太もも内側を鍛えるマシン"
+    },
+    {
+        "id": "outer-thigh",
+        "name": "アウターサイ",
+        "category": "machine",
+        "targetMuscles": [
+            "太もも外側",
+            "お尻"
+        ],
+        "description": "太もも外側とお尻を鍛えるマシン"
+    },
+    {
+        "id": "treadmill",
+        "name": "トレッドミル",
+        "category": "cardio",
+        "targetMuscles": [
+            "全身"
+        ],
+        "description": "ランニングマシン。有酸素運動に最適"
+    },
+    {
+        "id": "bike",
+        "name": "エアロバイク",
+        "category": "cardio",
+        "targetMuscles": [
+            "脚",
+            "全身"
+        ],
+        "description": "自転車エルゴメーター。有酸素運動に最適"
+    },
+    {
+        "id": "bench-press",
+        "name": "ベンチプレス",
+        "category": "freeweight",
+        "targetMuscles": [
+            "胸",
+            "腕"
+        ],
+        "description": "筋トレの代名詞。胸と腕の後ろを鍛える"
+    },
+    {
+        "id": "squat-rack",
+        "name": "スクワットラック",
+        "category": "freeweight",
+        "targetMuscles": [
+            "脚"
+        ],
+        "description": "スクワット専用エリア。脚全体を鍛える"
+    },
+    {
+        "id": "free-weight-area",
+        "name": "フリーウエイトエリア",
+        "category": "freeweight",
+        "targetMuscles": [
+            "全身"
+        ],
+        "description": "デッドリフトやパワークリーンなど"
+    },
+    {
+        "id": "dumbbell-bench",
+        "name": "ダンベルベンチ",
+        "category": "freeweight",
+        "targetMuscles": [
+            "全身"
+        ],
+        "description": "ダンベルを使った各種エクササイズ"
+    }
+]
