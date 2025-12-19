@@ -45,8 +45,37 @@ const UsageSummary = () => {
                 <div className="fade-in">
                     <div style={{ display: 'flex', gap: '0.8rem', flexWrap: 'wrap' }}>
                         <MetricCard label="Visits" value={stats.visitCount} unit="x" icon="📍" />
+                        <MetricCard label="Stay Time" value={stats.totalTime} unit="min" icon="⏱️" />
                         <MetricCard label="Cals" value={stats.calories} unit="kcal" icon="🔥" />
-                        <MetricCard label="Active" value={stats.totalTime} unit="min" icon="⏱️" />
+                    </div>
+
+                    {/* Detailed Recent Activity */}
+                    <div style={{ marginTop: '1.5rem', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '1rem' }}>
+                        <h4 style={{ fontSize: '0.85rem', color: 'var(--color-text-dim)', marginBottom: '0.8rem', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Recent Activity</h4>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+                            {stats.recentLogs && stats.recentLogs.length > 0 ? (
+                                stats.recentLogs.slice(0, 5).map((log, idx) => (
+                                    <div key={log.id || idx} style={{ 
+                                        display: 'flex', 
+                                        justifyContent: 'space-between', 
+                                        alignItems: 'center',
+                                        fontSize: '0.85rem',
+                                        background: 'rgba(255,255,255,0.02)',
+                                        padding: '0.6rem 0.8rem',
+                                        borderRadius: '8px'
+                                    }}>
+                                        <span style={{ color: 'white', fontWeight: '500' }}>{log.equipment_name}</span>
+                                        <span style={{ color: 'var(--color-primary-light)', fontWeight: 'bold' }}>
+                                            {log.distance_km 
+                                                ? `${log.distance_km}km` 
+                                                : `${log.weight}kg × ${log.reps}`}
+                                        </span>
+                                    </div>
+                                ))
+                            ) : (
+                                <div style={{ fontSize: '0.8rem', color: 'var(--color-text-dim)', textAlign: 'center', padding: '1rem' }}>No recent activity.</div>
+                            )}
+                        </div>
                     </div>
                 </div>
             )}

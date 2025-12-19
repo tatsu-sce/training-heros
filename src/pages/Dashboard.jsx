@@ -118,6 +118,24 @@ const Dashboard = () => {
         console.error('Error handling QR code:', err);
         alert(`Failed: ${err.message || 'Unknown error'}`);
       }
+    } else if (decodedText === 'gym_check_out') {
+      try {
+        const { data, error } = await supabase.rpc('handle_occupancy', { 
+          action_type: 'check_out' 
+        });
+
+        if (error) throw error;
+
+        if (data?.duration !== undefined) {
+          alert(`Check-out confirmed! You stayed for ${data.duration} minutes.`);
+        }
+
+        navigate('/');
+        refreshProfile();
+      } catch (err) {
+        console.error('Error handling QR code:', err);
+        alert(`Failed: ${err.message || 'Unknown error'}`);
+      }
     } else {
       // Invalid QR code for check-in context
       setIsQRModalOpen(false);
@@ -147,25 +165,55 @@ const Dashboard = () => {
           onSignOut={handleSignOut}
         />
 
-        <div style={{ textAlign: 'right', flex: 1 }}>
-          <h1 className="gradient-text" style={{ fontSize: window.innerWidth < 400 ? '1.5rem' : '1.8rem', marginBottom: '0.2rem' }}>UniFit</h1>
-          <p style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem' }}>Next-Gen Fitness Tracker</p>
-          {profile?.is_present !== undefined && (
-            <span style={{
-              display: 'inline-block',
-              marginTop: '0.4rem',
-              padding: '2px 10px',
-              borderRadius: '20px',
-              fontSize: '0.7rem',
-              fontWeight: 'bold',
-              background: profile.is_present ? 'rgba(52, 211, 153, 0.15)' : 'rgba(156, 163, 175, 0.15)',
-              color: profile.is_present ? '#34d399' : '#9ca3af',
-              border: `1px solid ${profile.is_present ? 'rgba(52, 211, 153, 0.3)' : 'rgba(156, 163, 175, 0.3)'}`,
-              letterSpacing: '0.02em'
-            }}>
-              {profile.is_present ? '● ONLINE' : '○ AWAY'}
-            </span>
-          )}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <button 
+            onClick={() => setIsQRModalOpen(true)}
+            style={{
+              padding: '0.6rem 0.8rem',
+              borderRadius: '12px',
+              background: 'rgba(255,255,255,0.05)',
+              border: '1px solid rgba(255,255,255,0.1)',
+              color: 'white',
+              cursor: 'pointer',
+              fontSize: '1.2rem',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transition: 'all 0.2s',
+              boxShadow: '0 2px 10px rgba(0,0,0,0.2)'
+            }}
+            title="Scan QR Code"
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'rgba(99, 102, 241, 0.2)';
+              e.currentTarget.style.borderColor = 'rgba(99, 102, 241, 0.4)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
+              e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)';
+            }}
+          >
+            📸
+          </button>
+          <div style={{ textAlign: 'right' }}>
+            <h1 className="gradient-text" style={{ fontSize: window.innerWidth < 400 ? '1.5rem' : '1.8rem', marginBottom: '0.2rem', lineHeight: '1' }}>UniFit</h1>
+            <p style={{ color: 'var(--color-text-muted)', fontSize: '0.75rem', margin: 0 }}>Next-Gen Fitness Tracker</p>
+            {profile?.is_present !== undefined && (
+              <span style={{ 
+                display: 'inline-block', 
+                marginTop: '0.2rem',
+                padding: '1px 8px', 
+                borderRadius: '20px', 
+                fontSize: '0.65rem', 
+                fontWeight: 'bold',
+                background: profile.is_present ? 'rgba(52, 211, 153, 0.15)' : 'rgba(156, 163, 175, 0.15)',
+                color: profile.is_present ? '#34d399' : '#9ca3af',
+                border: `1px solid ${profile.is_present ? 'rgba(52, 211, 153, 0.3)' : 'rgba(156, 163, 175, 0.3)'}`,
+                letterSpacing: '0.02em'
+              }}>
+                {profile.is_present ? '● CHECKED IN' : '○ AWAY'}
+              </span>
+            )}
+          </div>
         </div>
       </header>
 

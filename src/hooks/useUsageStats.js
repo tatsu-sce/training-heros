@@ -10,7 +10,8 @@ export const useUsageStats = (period = 'week') => {
         gymTime: 0,
         calories: 0,
         equipmentStats: [],
-        dailyActivity: []
+        dailyActivity: [],
+        recentLogs: []
     });
     const [loading, setLoading] = useState(false);
 
@@ -64,10 +65,11 @@ export const useUsageStats = (period = 'week') => {
 
             // --- Process Data ---
             const checkIns = occupancyLogs ? occupancyLogs.filter(log => log.action === 'check_in') : [];
+            const checkOuts = occupancyLogs ? occupancyLogs.filter(log => log.action === 'check_out') : [];
             const visitCount = checkIns.length;
 
             const equipDurationSeconds = equipmentLogs?.reduce((sum, log) => sum + (log.duration_seconds || 0), 0) || 0;
-            const estimatedGymTimeMinutes = visitCount * 60; // Simplified estimate
+            const actualGymTimeMinutes = checkOuts.reduce((sum, log) => sum + (log.duration_minutes || 0), 0);
 
             // Equipment Stats
             const eqMap = {};
@@ -90,12 +92,13 @@ export const useUsageStats = (period = 'week') => {
             const dailyActivity = Object.entries(activityMap).map(([date, count]) => ({ date, count }));
 
             setStats({
-                totalTime: Math.round(equipDurationSeconds / 60),
+                totalTime: actualGymTimeMinutes,
                 visitCount,
-                gymTime: estimatedGymTimeMinutes,
+                gymTime: actualGymTimeMinutes,
                 calories: Math.round(equipDurationSeconds / 60 * 5 + visitCount * 100),
                 equipmentStats,
-                dailyActivity
+                dailyActivity,
+                recentLogs: equipmentLogs ? [...equipmentLogs].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 10) : []
             });
 
         } catch (error) {
