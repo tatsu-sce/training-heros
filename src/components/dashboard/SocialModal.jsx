@@ -2,13 +2,18 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabaseClient';
 import { useAuth } from '../../contexts/AuthContext';
 import Modal from '../ui/Modal';
+import ProfileModal from './ProfileModal';
 
 const SocialModal = ({ isOpen, onClose }) => {
     const { user } = useAuth();
     const [friends, setFriends] = useState([]);
     const [searchId, setSearchId] = useState('');
     const [loading, setLoading] = useState(false);
-    const [username, setUsername] = useState('');
+    const [selectedFriend, setSelectedFriend] = useState(null);
+    const [isProfileOpen, setIsProfileOpen] = useState(false);
+
+    const [username, setUsername] = useState(''); // repurposing this state to hold student_id for display
+    // Removed isEditingId, newIdInput as manual setting is deprecated
 
     useEffect(() => {
         if (isOpen && user) {
@@ -29,7 +34,8 @@ const SocialModal = ({ isOpen, onClose }) => {
             const { data: relations, error } = await supabase
                 .from('friends')
                 .select('friend_id')
-                .eq('user_id', user.id);
+                .eq('user_id', user.id)
+                .eq('status', 'accepted');
 
             if (error) throw error;
             if (relations.length === 0) {
@@ -72,16 +78,84 @@ const SocialModal = ({ isOpen, onClose }) => {
 
             const { error } = await supabase
                 .from('friends')
-                .insert([{ user_id: user.id, friend_id: target.id, status: 'accepted' }]);
+                .insert([{ user_id: user.id, friend_id: target.id, status: 'pending' }]);
 
             if (error) throw error;
 
-            alert('Friend added!');
+            alert('リクエストを送信しました');
             setSearchId('');
             fetchFriends();
         } catch (err) {
             console.error('Error adding friend:', err);
             alert('Failed to add friend. Already added?');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // --- Groups Logic ---
+    const fetchGroups = async () => {
+        // Fetch groups where user is a member
+        // Detailed Logic: member -> group_id -> group details
+        // For simple demo, we fetch all groups for now so we can see them easily
+        try {
+            const { data, error } = await supabase
+                .from('groups')
+                .select('*')
+                .order('created_at', { ascending: false });
+            if (error) throw error;
+            setGroups(data);
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+    const removeFriend = async (friendId) => {
+        try {
+            // Delete friendship (both sides if mutual, but for now we follow the user_id logic)
+            const { error } = await supabase
+                .from('friends')
+                .delete()
+                .eq('user_id', user.id)
+                .eq('friend_id', friendId);
+
+            if (error) throw error;
+
+            // Also delete the reverse direction if it exists (for mutual)
+            await supabase
+                .from('friends')
+                .delete()
+                .eq('user_id', friendId)
+                .eq('friend_id', user.id);
+
+            alert('フレンドを削除しました');
+            fetchFriends();
+        } catch (err) {
+            console.error('Error removing friend:', err);
+            alert('削除に失敗しました');
+        }
+    };
+
+    const createGroup = async () => {
+        if (!newGroupName) return;
+        setLoading(true);
+        try {
+            const { data, error } = await supabase
+                .from('groups')
+                .insert([{ name: newGroupName, owner_id: user.id }])
+                .select()
+                .single();
+
+            if (error) throw error;
+
+            // Add self as member
+            await supabase.from('group_members').insert([{ group_id: data.id, user_id: user.id }]);
+
+            alert('Group created!');
+            setNewGroupName('');
+            fetchGroups();
+        } catch (err) {
+            console.error(err);
         } finally {
             setLoading(false);
         }
@@ -124,28 +198,86 @@ const SocialModal = ({ isOpen, onClose }) => {
                     </button>
                 </div>
 
-                <h4 style={{ marginBottom: '1rem', color: 'var(--color-text-muted)' }}>My Friends</h4>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
-                    {friends.map(friend => (
-                        <div key={friend.id} style={{
-                            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                            padding: '1rem', background: 'rgba(255,255,255,0.03)', borderRadius: 'var(--radius-sm)'
-                        }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                                <div style={{ width: '40px', height: '40px', background: '#333', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                    {friend.student_id?.charAt(0) || '?'}
+                    <h4 style={{ marginBottom: '1rem', color: 'var(--color-text-muted)' }}>My Friends</h4>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
+                        {friends.map(friend => (
+                            <div
+                                key={friend.id}
+                                onClick={() => {
+                                    setSelectedFriend(friend);
+                                    setIsProfileOpen(true);
+                                }}
+                                style={{
+                                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                                    padding: '1rem', background: 'rgba(255,255,255,0.03)', borderRadius: 'var(--radius-sm)',
+                                    cursor: 'pointer', transition: 'background 0.2s'
+                                }}
+                                onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.06)'}
+                                onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.03)'}
+                            >
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                                    {/* Avatar Placeholder */}
+                                    <div style={{ width: '40px', height: '40px', background: '#333', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                        {friend.student_id?.charAt(0) || '?'}
+                                    </div>
+                                    <div>
+                                        <div style={{ fontWeight: '600' }}>{friend.student_id || 'Unknown'}</div>
+                                    </div>
                                 </div>
                                 <div>
                                     <div style={{ fontWeight: '600' }}>{friend.student_id || 'Unknown'}</div>
                                 </div>
                             </div>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                {friend.is_present && (
-                                    <div style={{ width: '10px', height: '10px', background: '#4ade80', borderRadius: '50%', boxShadow: '0 0 8px #4ade80' }} title="In Gym" />
-                                )}
-                                <span style={{ fontSize: '0.8rem', color: friend.is_present ? '#4ade80' : 'var(--color-text-muted)' }}>
-                                    {friend.is_present ? 'In Gym' : 'Offline'}
-                                </span>
+                        ))}
+                        {friends.length === 0 && <p style={{ color: 'var(--color-text-muted)' }}>No friends yet. Add someone!</p>}
+                    </div>
+
+                    {/* Friend Profile Modal */}
+                    {selectedFriend && (
+                        <ProfileModal
+                            isOpen={isProfileOpen}
+                            onClose={() => setIsProfileOpen(false)}
+                            profile={selectedFriend}
+                            isFriendProfile={true}
+                            onRemoveFriend={removeFriend}
+                        />
+                    )}
+                </div>
+            )}
+
+            {activeTab === 'groups' && (
+                <div>
+                    <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '2rem' }}>
+                        <input
+                            type="text"
+                            placeholder="New Group Name"
+                            value={newGroupName}
+                            onChange={(e) => setNewGroupName(e.target.value)}
+                            style={{
+                                flex: 1,
+                                padding: '0.8rem',
+                                borderRadius: 'var(--radius-sm)',
+                                border: '1px solid rgba(255,255,255,0.1)',
+                                background: 'rgba(0,0,0,0.2)',
+                                color: 'white'
+                            }}
+                        />
+                        <button className="btn-primary" onClick={createGroup} disabled={loading}>
+                            Create
+                        </button>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '1rem' }}>
+                        {groups.map(group => (
+                            <div key={group.id} style={{
+                                padding: '1rem',
+                                background: 'rgba(99, 102, 241, 0.1)',
+                                border: '1px solid rgba(99, 102, 241, 0.3)',
+                                borderRadius: 'var(--radius-sm)',
+                                textAlign: 'center'
+                            }}>
+                                <div style={{ fontSize: '1rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>{group.name}</div>
+                                <div style={{ fontSize: '0.8rem', color: 'var(--color-text-dim)' }}>Tap to view</div>
                             </div>
                         </div>
                     ))}

@@ -30,7 +30,8 @@ export const useFriends = () => {
             const { data: relations, error } = await supabase
                 .from('friends')
                 .select('friend_id')
-                .eq('user_id', user.id);
+                .eq('user_id', user.id)
+                .eq('status', 'accepted');
 
             if (error) throw error;
             if (!relations || relations.length === 0) {

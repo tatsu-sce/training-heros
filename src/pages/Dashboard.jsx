@@ -19,7 +19,6 @@ import UsageSummaryModal from '../components/dashboard/UsageSummaryModal';
 import UsageSummary from '../components/dashboard/UsageSummary';
 import ActiveFriends from '../components/dashboard/ActiveFriends';
 import HamburgerMenu from '../components/dashboard/HamburgerMenu';
-import RecommendedTimesModal from '../components/dashboard/RecommendedTimesModal';
 import { supabase } from '../lib/supabaseClient';
 
 const Dashboard = () => {
@@ -36,7 +35,6 @@ const Dashboard = () => {
   const [isGoalModalOpen, setIsGoalModalOpen] = useState(false);
   const [isUsageModalOpen, setIsUsageModalOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
-  const [isRecommendedTimesOpen, setIsRecommendedTimesOpen] = useState(false);
 
 
   const [expandedWorkout, setExpandedWorkout] = useState(null);
@@ -102,12 +100,12 @@ const Dashboard = () => {
     if (isProcessingRef.current) return;
     isProcessingRef.current = true;
     console.log(`Scan result: ${decodedText}`);
-
+    
     // Check-in Logic (Dashboard only accepts check-in)
     if (decodedText === 'gym_check_in') {
       try {
-        const { data, error } = await supabase.rpc('handle_occupancy', {
-          action_type: 'check_in'
+        const { data, error } = await supabase.rpc('handle_occupancy', { 
+          action_type: 'check_in' 
         });
 
         if (error) throw error;
@@ -148,10 +146,10 @@ const Dashboard = () => {
 
   return (
     <div className="container" style={{ paddingTop: '2rem', paddingBottom: '4rem' }}>
-      <header style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
+      <header style={{ 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center', 
         marginBottom: '2rem',
         flexWrap: 'wrap',
         gap: '1rem'
@@ -273,63 +271,21 @@ const Dashboard = () => {
           <QRScanner key={isQRModalOpen ? 'open' : 'closed'} onScanSuccess={handleScanSuccess} />
         </div>
       </Modal>
-      <RecommendedTimesModal isOpen={isRecommendedTimesOpen} onClose={() => setIsRecommendedTimesOpen(false)} />
 
       {/* 1. Status & Chart (Top) */}
       <div style={{ marginBottom: '2rem' }}>
         <LiveStatusCard data={occupancyData} />
-
-        {/* Recommended Times Button */}
-        <button
-          onClick={() => setIsRecommendedTimesOpen(true)}
-          className="glass-panel"
-          style={{
-            width: '100%',
-            marginTop: '1rem',
-            padding: '1rem',
-            background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(99, 102, 241, 0.1) 100%)',
-            border: '1px solid rgba(16, 185, 129, 0.3)',
-            borderRadius: '12px',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            transition: 'all 0.2s'
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.transform = 'translateY(-2px)';
-            e.currentTarget.style.borderColor = 'rgba(16, 185, 129, 0.5)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.transform = 'translateY(0)';
-            e.currentTarget.style.borderColor = 'rgba(16, 185, 129, 0.3)';
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-            <span style={{ fontSize: '1.5rem' }}>💡</span>
-            <div style={{ textAlign: 'left' }}>
-              <div style={{ fontSize: '1rem', fontWeight: '600', color: 'var(--color-primary)' }}>
-                Recommended Times
-              </div>
-              <div style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>
-                Find the best time to train
-              </div>
-            </div>
-          </div>
-          <span style={{ fontSize: '1.2rem', color: 'var(--color-primary)' }}>→</span>
-        </button>
-
         <div className="glass-panel" style={{ marginTop: '1rem', padding: '1.5rem' }}>
           <OccupancyChart />
         </div>
       </div>
 
       {/* 2. Summary & Avatar (Middle) */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-        gap: '1.5rem',
-        marginBottom: '2rem'
+      <div style={{ 
+        display: 'grid', 
+        gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', 
+        gap: '1.5rem', 
+        marginBottom: '2rem' 
       }}>
         {/* Left Column: Summary & Friends */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
@@ -338,13 +294,13 @@ const Dashboard = () => {
         </div>
 
         {/* Right Column: Avatar */}
-        <div className="glass-panel" style={{
-          padding: '0',
-          display: 'flex',
-          flexDirection: 'column',
-          overflow: 'hidden',
-          minHeight: window.innerWidth < 600 ? '350px' : '450px',
-          position: 'relative'
+        <div className="glass-panel" style={{ 
+          padding: '0', 
+          display: 'flex', 
+          flexDirection: 'column', 
+          overflow: 'hidden', 
+          minHeight: window.innerWidth < 600 ? '350px' : '450px', 
+          position: 'relative' 
         }}>
           <div style={{ padding: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', zIndex: 10 }}>
             <h3 style={{ fontSize: '1.1rem' }}>My Avatar</h3>
