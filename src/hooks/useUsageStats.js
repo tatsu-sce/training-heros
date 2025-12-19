@@ -69,7 +69,9 @@ export const useUsageStats = (period = 'week') => {
             const visitCount = checkIns.length;
 
             const equipDurationSeconds = equipmentLogs?.reduce((sum, log) => sum + (log.duration_seconds || 0), 0) || 0;
-            const actualGymTimeMinutes = checkOuts.reduce((sum, log) => sum + (log.duration_minutes || 0), 0);
+            // Sum up duration_minutes from check_out logs
+            const actualGymTimeSeconds = checkOuts.reduce((sum, log) => sum + (log.duration_seconds || 0), 0);
+            const actualGymTimeMinutes = Math.floor(actualGymTimeSeconds / 60);
 
             // Equipment Stats
             const eqMap = {};
@@ -92,7 +94,8 @@ export const useUsageStats = (period = 'week') => {
             const dailyActivity = Object.entries(activityMap).map(([date, count]) => ({ date, count }));
 
             setStats({
-                totalTime: actualGymTimeMinutes,
+                totalTime: actualGymTimeSeconds < 60 ? actualGymTimeSeconds : actualGymTimeMinutes,
+                timeUnit: actualGymTimeSeconds < 60 ? 'sec' : 'min',
                 visitCount,
                 gymTime: actualGymTimeMinutes,
                 calories: Math.round(equipDurationSeconds / 60 * 5 + visitCount * 100),

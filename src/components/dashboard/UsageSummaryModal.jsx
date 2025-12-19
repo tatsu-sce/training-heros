@@ -66,21 +66,14 @@ const UsageSummaryModal = ({ isOpen, onClose }) => {
 
             // Visits (Count check-ins)
             const checkIns = occupancyLogs ? occupancyLogs.filter(log => log.action === 'check_in') : [];
+            const checkOuts = occupancyLogs ? occupancyLogs.filter(log => log.action === 'check_out') : [];
             const visitCount = checkIns.length;
 
-            // Total Time (Estimate: Check-in to Check-out, or avg 1h if no checkout)
-            // Ideally we match check-in with next check-out.
-            let totalTimeMinutes = 0;
-            // Simplified calculation: Equipment usage time + (Visits * 45mins base)? 
-            // Better: Sum of equipment logs duration + standard workout time?
-            // Let's use equipment duration for "Active Time" and Visit count for "Visits".
+            // Total Time (Sum duration_seconds from check_out entries)
+            const actualGymTimeSeconds = checkOuts.reduce((sum, log) => sum + (log.duration_seconds || 0), 0);
+            const actualGymTimeMinutes = Math.floor(actualGymTimeSeconds / 60);
 
             const equipDurationSeconds = equipmentLogs?.reduce((sum, log) => sum + (log.duration_seconds || 0), 0) || 0;
-
-            // Just for demo, let's assume each visit is roughly 60 mins if checkout is missing, 
-            // or sum actual pairs if we had robust logic. For now, let's use Equipment Time as highly accurate metric,
-            // and Visits * 60m as "Total Gym Time".
-            const estimatedGymTimeMinutes = visitCount * 60;
 
             // Equipment Stats
             const eqMap = {};
@@ -94,21 +87,20 @@ const UsageSummaryModal = ({ isOpen, onClose }) => {
                 .sort((a, b) => b.minutes - a.minutes);
 
             // Daily Activity (for chart)
-            // Group visits by date
             const activityMap = {};
-            // Init empty dates if needed, but let's just map existing logs
             checkIns.forEach(log => {
                 const date = new Date(log.created_at).toLocaleDateString();
                 if (!activityMap[date]) activityMap[date] = 0;
-                activityMap[date]++; // Count visits
+                activityMap[date]++;
             });
             const dailyActivity = Object.entries(activityMap).map(([date, count]) => ({ date, count }));
 
             setStats({
-                totalTime: Math.round(equipDurationSeconds / 60), // Active machine time
+                totalStayTime: actualGymTimeSeconds < 60 ? actualGymTimeSeconds : actualGymTimeMinutes,
+                stayTimeUnit: actualGymTimeSeconds < 60 ? 'sec' : 'min',
+                machineTime: Math.round(equipDurationSeconds / 60), // Active machine time
                 visitCount,
-                gymTime: estimatedGymTimeMinutes,
-                calories: Math.round(equipDurationSeconds / 60 * 5 + visitCount * 100), // Rough estimate
+                calories: Math.round(equipDurationSeconds / 60 * 5 + visitCount * 100),
                 equipmentStats,
                 dailyActivity
             });
@@ -171,8 +163,8 @@ const UsageSummaryModal = ({ isOpen, onClose }) => {
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '2rem' }}>
                             <MetricCard label="Gym Visits" value={stats.visitCount} unit="times" icon="📍" />
                             <MetricCard label="Est. Calories" value={stats.calories} unit="kcal" icon="🔥" />
-                            <MetricCard label="Machine Time" value={stats.totalTime} unit="min" icon="⏱️" />
-                            <MetricCard label="Total Stay" value={stats.gymTime} unit="min" icon="🏠" />
+                            <MetricCard label="Machine Time" value={stats.machineTime} unit="min" icon="⏱️" />
+                            <MetricCard label="Total Stay" value={stats.totalStayTime} unit={stats.stayTimeUnit || 'min'} icon="🏠" />
                         </div>
 
                         {/* Chart Area (Simplified Bar Chart) */}

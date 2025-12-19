@@ -31,6 +31,20 @@ const Login = () => {
         setMessage('Password reset link has been sent to your email.');
         setShowEmailSent(true);
       } else if (isSignUp) {
+        // Pre-check if Student ID already exists
+        const { data: existing, error: checkError } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('student_id', studentId)
+          .maybeSingle();
+
+        if (checkError) throw checkError;
+        if (existing) {
+          setError("この学籍番号は既に登録されています。サインインするか、番号を確認してください。");
+          setLoading(false);
+          return;
+        }
+
         const { error } = await supabase.auth.signUp({
           email,
           password,

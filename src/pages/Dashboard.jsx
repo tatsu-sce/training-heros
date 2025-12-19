@@ -100,12 +100,12 @@ const Dashboard = () => {
     if (isProcessingRef.current) return;
     isProcessingRef.current = true;
     console.log(`Scan result: ${decodedText}`);
-    
+
     // Check-in Logic (Dashboard only accepts check-in)
     if (decodedText === 'gym_check_in') {
       try {
-        const { data, error } = await supabase.rpc('handle_occupancy', { 
-          action_type: 'check_in' 
+        const { data, error } = await supabase.rpc('handle_occupancy', {
+          action_type: 'check_in'
         });
 
         if (error) throw error;
@@ -118,14 +118,16 @@ const Dashboard = () => {
       }
     } else if (decodedText === 'gym_check_out') {
       try {
-        const { data, error } = await supabase.rpc('handle_occupancy', { 
-          action_type: 'check_out' 
+        const { data, error } = await supabase.rpc('handle_occupancy', {
+          action_type: 'check_out'
         });
 
         if (error) throw error;
 
-        if (data?.duration !== undefined) {
-          alert(`Check-out confirmed! You stayed for ${data.duration} minutes.`);
+        if (data?.duration_seconds !== undefined) {
+          const unit = data.duration_seconds < 60 ? 'seconds' : 'minutes';
+          const value = data.duration_seconds < 60 ? data.duration_seconds : data.duration_minutes;
+          alert(`Check-out confirmed! You stayed for ${value} ${unit}.`);
         }
 
         navigate('/');
@@ -146,10 +148,10 @@ const Dashboard = () => {
 
   return (
     <div className="container" style={{ paddingTop: '2rem', paddingBottom: '4rem' }}>
-      <header style={{ 
-        display: 'flex', 
-        justifyContent: 'space-between', 
-        alignItems: 'center', 
+      <header style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
         marginBottom: '2rem',
         flexWrap: 'wrap',
         gap: '1rem'
@@ -164,7 +166,7 @@ const Dashboard = () => {
         />
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
-          <button 
+          <button
             onClick={() => setIsQRModalOpen(true)}
             className="pulse-glow"
             style={{
@@ -195,21 +197,21 @@ const Dashboard = () => {
           >
             {/* Premium QR SVG Icon */}
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M3 3H9V9H3V3ZM5 5V7H7V5H5Z" fill="currentColor"/>
-              <path d="M3 15H9V21H3V15ZM5 17V19H7V17H5Z" fill="currentColor"/>
-              <path d="M15 3H21V9H15V3ZM17 5V7H19V5H17Z" fill="currentColor"/>
-              <path d="M15 15H17V17H15V15Z" fill="currentColor"/>
-              <path d="M17 17H19V19H17V17Z" fill="currentColor"/>
-              <path d="M19 15H21V17H19V15Z" fill="currentColor"/>
-              <path d="M15 19H17V21H15V19Z" fill="currentColor"/>
-              <path d="M19 19H21V21H19V19Z" fill="currentColor"/>
-              <path d="M11 11H13V13H11V11Z" fill="currentColor"/>
-              <path d="M11 3H13V9H11V3Z" fill="currentColor"/>
-              <path d="M3 11H9V13H3V11Z" fill="currentColor"/>
-              <path d="M15 11H21V13H15V11Z" fill="currentColor"/>
-              <path d="M11 15H13V21H11V15Z" fill="currentColor"/>
+              <path d="M3 3H9V9H3V3ZM5 5V7H7V5H5Z" fill="currentColor" />
+              <path d="M3 15H9V21H3V15ZM5 17V19H7V17H5Z" fill="currentColor" />
+              <path d="M15 3H21V9H15V3ZM17 5V7H19V5H17Z" fill="currentColor" />
+              <path d="M15 15H17V17H15V15Z" fill="currentColor" />
+              <path d="M17 17H19V19H17V17Z" fill="currentColor" />
+              <path d="M19 15H21V17H19V15Z" fill="currentColor" />
+              <path d="M15 19H17V21H15V19Z" fill="currentColor" />
+              <path d="M19 19H21V21H19V19Z" fill="currentColor" />
+              <path d="M11 11H13V13H11V11Z" fill="currentColor" />
+              <path d="M11 3H13V9H11V3Z" fill="currentColor" />
+              <path d="M3 11H9V13H3V11Z" fill="currentColor" />
+              <path d="M15 11H21V13H15V11Z" fill="currentColor" />
+              <path d="M11 15H13V21H11V15Z" fill="currentColor" />
             </svg>
-            
+
             {/* Subtle Inner Glow Overlay */}
             <div style={{
               position: 'absolute',
@@ -225,12 +227,12 @@ const Dashboard = () => {
             <h1 className="gradient-text" style={{ fontSize: window.innerWidth < 400 ? '1.5rem' : '1.8rem', marginBottom: '0.2rem', lineHeight: '1' }}>UniFit</h1>
             <p style={{ color: 'var(--color-text-muted)', fontSize: '0.75rem', margin: 0 }}>Next-Gen Fitness Tracker</p>
             {profile?.is_present !== undefined && (
-              <span style={{ 
-                display: 'inline-block', 
+              <span style={{
+                display: 'inline-block',
                 marginTop: '0.2rem',
-                padding: '1px 8px', 
-                borderRadius: '20px', 
-                fontSize: '0.65rem', 
+                padding: '1px 8px',
+                borderRadius: '20px',
+                fontSize: '0.65rem',
                 fontWeight: 'bold',
                 background: profile.is_present ? 'rgba(52, 211, 153, 0.15)' : 'rgba(156, 163, 175, 0.15)',
                 color: profile.is_present ? '#34d399' : '#9ca3af',
@@ -281,11 +283,11 @@ const Dashboard = () => {
       </div>
 
       {/* 2. Summary & Avatar (Middle) */}
-      <div style={{ 
-        display: 'grid', 
-        gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', 
-        gap: '1.5rem', 
-        marginBottom: '2rem' 
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+        gap: '1.5rem',
+        marginBottom: '2rem'
       }}>
         {/* Left Column: Summary & Friends */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
@@ -294,13 +296,13 @@ const Dashboard = () => {
         </div>
 
         {/* Right Column: Avatar */}
-        <div className="glass-panel" style={{ 
-          padding: '0', 
-          display: 'flex', 
-          flexDirection: 'column', 
-          overflow: 'hidden', 
-          minHeight: window.innerWidth < 600 ? '350px' : '450px', 
-          position: 'relative' 
+        <div className="glass-panel" style={{
+          padding: '0',
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden',
+          minHeight: window.innerWidth < 600 ? '350px' : '450px',
+          position: 'relative'
         }}>
           <div style={{ padding: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', zIndex: 10 }}>
             <h3 style={{ fontSize: '1.1rem' }}>My Avatar</h3>

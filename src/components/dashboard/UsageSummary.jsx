@@ -45,7 +45,7 @@ const UsageSummary = () => {
                 <div className="fade-in">
                     <div style={{ display: 'flex', gap: '0.8rem', flexWrap: 'wrap' }}>
                         <MetricCard label="Visits" value={stats.visitCount} unit="x" icon="📍" />
-                        <MetricCard label="Stay Time" value={stats.totalTime} unit="min" icon="⏱️" />
+                        <MetricCard label="Stay Time" value={stats.totalTime} unit={stats.timeUnit || 'min'} icon="⏱️" />
                         <MetricCard label="Cals" value={stats.calories} unit="kcal" icon="🔥" />
                     </div>
 
@@ -55,9 +55,9 @@ const UsageSummary = () => {
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
                             {stats.recentLogs && stats.recentLogs.length > 0 ? (
                                 stats.recentLogs.slice(0, 5).map((log, idx) => (
-                                    <div key={log.id || idx} style={{ 
-                                        display: 'flex', 
-                                        justifyContent: 'space-between', 
+                                    <div key={log.id || idx} style={{
+                                        display: 'flex',
+                                        justifyContent: 'space-between',
                                         alignItems: 'center',
                                         fontSize: '0.85rem',
                                         background: 'rgba(255,255,255,0.02)',
@@ -66,8 +66,8 @@ const UsageSummary = () => {
                                     }}>
                                         <span style={{ color: 'white', fontWeight: '500' }}>{log.equipment_name}</span>
                                         <span style={{ color: 'var(--color-primary-light)', fontWeight: 'bold' }}>
-                                            {log.distance_km 
-                                                ? `${log.distance_km}km` 
+                                            {log.distance_km
+                                                ? `${log.distance_km}km`
                                                 : `${log.weight}kg × ${log.reps}`}
                                         </span>
                                     </div>

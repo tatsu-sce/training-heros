@@ -19,24 +19,30 @@ const EquipmentSession = () => {
         isProcessingRef.current = true;
 
         console.log("Exit Scan:", decodedText);
-        
+
         if (decodedText === 'gym_check_out') {
             try {
-                const { data, error } = await supabase.rpc('handle_occupancy', { 
-                    action_type: 'check_out' 
+                const { data, error } = await supabase.rpc('handle_occupancy', {
+                    action_type: 'check_out'
                 });
 
                 if (error) {
                     throw error;
                 }
 
-                setIsScannerOpen(false); 
+                if (data?.duration_seconds !== undefined) {
+                    const unit = data.duration_seconds < 60 ? 'seconds' : 'minutes';
+                    const value = data.duration_seconds < 60 ? data.duration_seconds : data.duration_minutes;
+                    alert(`Check-out confirmed! You stayed for ${value} ${unit}.`);
+                }
+
+                setIsScannerOpen(false);
                 isProcessingRef.current = false;
                 navigate('/');
             } catch (err) {
                 console.error("Error handling exit scan:", err);
                 alert(`Failed: ${err.message || 'Unknown error'}`);
-                isProcessingRef.current = false; 
+                isProcessingRef.current = false;
             }
         } else {
             setIsScannerOpen(false);
@@ -53,10 +59,10 @@ const EquipmentSession = () => {
 
     return (
         <div className="container" style={{ paddingTop: '2rem', paddingBottom: '4rem' }}>
-            <header style={{ 
-                display: 'flex', 
-                justifyContent: 'space-between', 
-                alignItems: 'center', 
+            <header style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
                 marginBottom: '2rem',
                 flexWrap: 'wrap',
                 gap: '1rem'
@@ -99,23 +105,23 @@ const EquipmentSession = () => {
                     >
                         {/* Premium Logout/Exit QR icon style */}
                         <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M3 3H9V9H3V3ZM5 5V7H7V5H5Z" fill="currentColor"/>
-                            <path d="M3 15H9V21H3V15ZM5 17V19H7V17H5Z" fill="currentColor"/>
-                            <path d="M15 3H21V9H15V3ZM17 5V7H19V5H17Z" fill="currentColor"/>
-                            <path d="M15 15H17V17H15V15Z" fill="currentColor"/>
-                            <path d="M17 17H19V19H17V17Z" fill="currentColor"/>
-                            <path d="M19 15H21V17H19V15Z" fill="currentColor"/>
-                            <path d="M15 19H17V21H15V19Z" fill="currentColor"/>
-                            <path d="M19 19H21V21H19V19Z" fill="currentColor"/>
-                            <path d="M11 11H13V13H11V11Z" fill="currentColor"/>
-                            <path d="M11 3H13V9H11V3Z" fill="currentColor"/>
-                            <path d="M3 11H9V13H3V11Z" fill="currentColor"/>
-                            <path d="M15 11H21V13H15V11Z" fill="currentColor"/>
-                            <path d="M11 15H13V21H11V15Z" fill="currentColor"/>
+                            <path d="M3 3H9V9H3V3ZM5 5V7H7V5H5Z" fill="currentColor" />
+                            <path d="M3 15H9V21H3V15ZM5 17V19H7V17H5Z" fill="currentColor" />
+                            <path d="M15 3H21V9H15V3ZM17 5V7H19V5H17Z" fill="currentColor" />
+                            <path d="M15 15H17V17H15V15Z" fill="currentColor" />
+                            <path d="M17 17H19V19H17V17Z" fill="currentColor" />
+                            <path d="M19 15H21V17H19V15Z" fill="currentColor" />
+                            <path d="M15 19H17V21H15V19Z" fill="currentColor" />
+                            <path d="M19 19H21V21H19V19Z" fill="currentColor" />
+                            <path d="M11 11H13V13H11V11Z" fill="currentColor" />
+                            <path d="M11 3H13V9H11V3Z" fill="currentColor" />
+                            <path d="M3 11H9V13H3V11Z" fill="currentColor" />
+                            <path d="M15 11H21V13H15V11Z" fill="currentColor" />
+                            <path d="M11 15H13V21H11V15Z" fill="currentColor" />
                             {/* Overlaying a small logout arrow indication */}
-                            <path d="M12 12L14 10M12 12L14 14M12 12H18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                            <path d="M12 12L14 10M12 12L14 14M12 12H18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
-                        
+
                         {/* Subtle Inner Glow Overlay */}
                         <div style={{
                             position: 'absolute',
@@ -138,14 +144,14 @@ const EquipmentSession = () => {
             ) : null}
 
             {/* Logging Modal */}
-            <Modal 
-                isOpen={!!selectedEquipment} 
-                onClose={() => setSelectedEquipment(null)} 
+            <Modal
+                isOpen={!!selectedEquipment}
+                onClose={() => setSelectedEquipment(null)}
                 title="Workout Record"
             >
                 {selectedEquipment && (
-                    <EquipmentTimer 
-                        equipment={selectedEquipment} 
+                    <EquipmentTimer
+                        equipment={selectedEquipment}
                         onSave={() => {
                             setSelectedEquipment(null);
                         }}
