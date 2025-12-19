@@ -85,7 +85,7 @@ const OccupancyChart = () => {
                         <div style={{ width: '8px', height: '8px', background: 'var(--color-primary)', borderRadius: '2px' }} /> 実績
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.7rem', color: 'var(--color-text-dim)' }}>
-                        <div style={{ width: '8px', height: '8px', border: '1px dashed rgba(99, 102, 241, 0.5)', borderRadius: '2px' }} /> 予測
+                        <div style={{ width: '8px', height: '8px', background: 'rgba(99, 102, 241, 0.2)', border: '1px dashed rgba(99, 102, 241, 0.8)', borderRadius: '2px' }} /> 予測
                     </div>
                 </div>
             </div>
@@ -148,10 +148,10 @@ const OccupancyChart = () => {
                                     width: '100%',
                                     height: `${d.value}%`,
                                     background: d.isFuture 
-                                        ? 'transparent' 
+                                        ? 'rgba(99, 102, 241, 0.15)' 
                                         : d.isToday ? 'white' : 'var(--color-primary)',
-                                    border: d.isFuture ? '1px dashed rgba(99, 102, 241, 0.5)' : 'none',
-                                    opacity: d.isFuture ? 0.3 : (d.isToday ? 1 : 0.6),
+                                    border: d.isFuture ? '1px dashed rgba(99, 102, 241, 0.8)' : 'none',
+                                    opacity: d.isFuture ? 0.6 : (d.isToday ? 1 : 0.6),
                                     borderRadius: '2px 2px 0 0',
                                     transition: 'height 0.5s ease',
                                     boxShadow: d.isToday ? '0 0 10px rgba(255,255,255,0.5)' : 'none'
