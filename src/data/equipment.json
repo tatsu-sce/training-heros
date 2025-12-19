@@ -8,7 +8,7 @@
             "腕"
         ],
         "description": "胸と腕を鍛えるマシン",
-        "image": "/images/equipment/chest-press.png"
+        "image": "/images/equipment/チェストプレス.png"
     },
     {
         "id": "pec-fly",
@@ -19,7 +19,7 @@
             "肩"
         ],
         "description": "胸と肩の後ろを鍛えるマシン",
-        "image": "/images/equipment/pec-fly.png"
+        "image": "/images/equipment/ペックフライ.png"
     },
     {
         "id": "lat-pulldown",
@@ -29,7 +29,7 @@
             "背中"
         ],
         "description": "背中を鍛えるマシン",
-        "image": "/images/equipment/lat-pulldown.png"
+        "image": "/images/equipment/ラットプルダウン.png"
     },
     {
         "id": "seated-rowing",
@@ -39,7 +39,7 @@
             "背中"
         ],
         "description": "背中を鍛えるマシン",
-        "image": "/images/equipment/seated-rowing.png"
+        "image": "/images/equipment/シーテッドローイング.png"
     },
     {
         "id": "shoulder-press",
@@ -49,7 +49,7 @@
             "肩"
         ],
         "description": "肩を鍛えるマシン",
-        "image": "/images/equipment/shoulder-press.png"
+        "image": "/images/equipment/ショルダープレス.png"
     },
     {
         "id": "arm-curl",
@@ -59,7 +59,7 @@
             "腕"
         ],
         "description": "腕を鍛えるマシン",
-        "image": "/images/equipment/arm-curl.png"
+        "image": "/images/equipment/アームカール.png"
     },
     {
         "id": "sit-up-bench",
@@ -68,7 +68,8 @@
         "targetMuscles": [
             "腹筋"
         ],
-        "description": "お腹を鍛えるマシン"
+        "description": "お腹を鍛えるマシン",
+        "image": "/images/equipment/シットアップベンチ.png"
     },
     {
         "id": "back-extension",
@@ -77,7 +78,8 @@
         "targetMuscles": [
             "背中"
         ],
-        "description": "背中を鍛えるマシン"
+        "description": "背中を鍛えるマシン",
+        "image": "/images/equipment/バックエクステンション.png"
     },
     {
         "id": "leg-press",
@@ -86,7 +88,8 @@
         "targetMuscles": [
             "脚"
         ],
-        "description": "脚全体を鍛えるマシン"
+        "description": "脚全体を鍛えるマシン",
+        "image": "/images/equipment/レッグプレス.png"
     },
     {
         "id": "leg-extension",
@@ -95,7 +98,8 @@
         "targetMuscles": [
             "太もも前"
         ],
-        "description": "太もも前を鍛えるマシン"
+        "description": "太もも前を鍛えるマシン",
+        "image": "/images/equipment/レッグエクステンション.png"
     },
     {
         "id": "leg-curl",
@@ -104,7 +108,8 @@
         "targetMuscles": [
             "太もも後"
         ],
-        "description": "太もも後を鍛えるマシン"
+        "description": "太もも後を鍛えるマシン",
+        "image": "/images/equipment/レッグカール.png"
     },
     {
         "id": "inner-thigh",
@@ -113,7 +118,8 @@
         "targetMuscles": [
             "太もも内側"
         ],
-        "description": "太もも内側を鍛えるマシン"
+        "description": "太もも内側を鍛えるマシン",
+        "image": "/images/equipment/インナーサイ.png"
     },
     {
         "id": "outer-thigh",
@@ -123,7 +129,8 @@
             "太もも外側",
             "お尻"
         ],
-        "description": "太もも外側とお尻を鍛えるマシン"
+        "description": "太もも外側とお尻を鍛えるマシン",
+        "image": "/images/equipment/アウターサイ.png"
     },
     {
         "id": "treadmill",
@@ -132,7 +139,8 @@
         "targetMuscles": [
             "全身"
         ],
-        "description": "ランニングマシン。有酸素運動に最適"
+        "description": "ランニングマシン。有酸素運動に最適",
+        "image": "/images/equipment/トレッドミル.png"
     },
     {
         "id": "bike",
@@ -142,7 +150,8 @@
             "脚",
             "全身"
         ],
-        "description": "自転車エルゴメーター。有酸素運動に最適"
+        "description": "自転車エルゴメーター。有酸素運動に最適",
+        "image": "/images/equipment/エアロバイク.png"
     },
     {
         "id": "bench-press",
@@ -152,7 +161,8 @@
             "胸",
             "腕"
         ],
-        "description": "筋トレの代名詞。胸と腕の後ろを鍛える"
+        "description": "筋トレの代名詞。胸と腕の後ろを鍛える",
+        "image": "/images/equipment/ベンチプレス.png"
     },
     {
         "id": "squat-rack",
@@ -161,7 +171,8 @@
         "targetMuscles": [
             "脚"
         ],
-        "description": "スクワット専用エリア。脚全体を鍛える"
+        "description": "スクワット専用エリア。脚全体を鍛える",
+        "image": "/images/equipment/スクワットラック.png"
     },
     {
         "id": "free-weight-area",
@@ -170,7 +181,8 @@
         "targetMuscles": [
             "全身"
         ],
-        "description": "デッドリフトやパワークリーンなど"
+        "description": "デッドリフトやパワークリーンなど",
+        "image": "/images/equipment/フリーウエイトエリア.png"
     },
     {
         "id": "dumbbell-bench",
@@ -179,6 +191,7 @@
         "targetMuscles": [
             "全身"
         ],
-        "description": "ダンベルを使った各種エクササイズ"
+        "description": "ダンベルを使った各種エクササイズ",
+        "image": "/images/equipment/ダンベルベンチ.png"
     }
 ]
