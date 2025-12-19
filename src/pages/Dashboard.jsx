@@ -101,32 +101,28 @@ const Dashboard = () => {
     isProcessingRef.current = true;
     console.log(`Scan result: ${decodedText}`);
     
-    // Check-in / Check-out Logic
-    if (decodedText === 'gym_check_in' || decodedText === 'gym_check_out') {
-      const action = decodedText === 'gym_check_in' ? 'check_in' : 'check_out';
+    // Check-in Logic (Dashboard only accepts check-in)
+    if (decodedText === 'gym_check_in') {
       try {
         const { data, error } = await supabase.rpc('handle_occupancy', { 
-          action_type: action 
+          action_type: 'check_in' 
         });
 
         if (error) throw error;
 
-        if (action === 'check_in') {
-          navigate('/workout');
-        } else {
-            setIsQRModalOpen(false);
-            isProcessingRef.current = false;
-        }
+        navigate('/workout');
         refreshProfile();
       } catch (err) {
         console.error('Error handling QR code:', err);
         alert(`Failed: ${err.message || 'Unknown error'}`);
       }
     } else {
-      // Legacy behavior or explicit workout equipment scan
-      // Navigate to Equipment Session on successful entry scan
+      // Invalid QR code for check-in context
       setIsQRModalOpen(false);
-      navigate('/workout'); 
+      isProcessingRef.current = false;
+      setTimeout(() => {
+        alert('入室用QRコードのみ有効です');
+      }, 100);
     }
   };
 

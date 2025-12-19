@@ -4,15 +4,24 @@ import { Html5QrcodeScanner } from 'html5-qrcode';
 const QRScanner = ({ onScanSuccess, onScanFailure }) => {
     const scannerRef = useRef(null);
     const [scanResult, setScanResult] = useState(null);
-    const scannerIdRef = useRef(`reader-${Math.random().toString(36).substr(2, 9)}`);
-    const isMountedRef = useRef(false);
+    const scannerIdRef = useRef(`reader-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`);
+    const hasInitializedRef = useRef(false);
+    const hasScannedRef = useRef(false);
 
     useEffect(() => {
-        // Prevent double initialization
-        if (isMountedRef.current) return;
-        isMountedRef.current = true;
+        // Prevent any double initialization
+        if (hasInitializedRef.current) return;
+        hasInitializedRef.current = true;
 
         const scannerId = scannerIdRef.current;
+        
+        // Ensure DOM element exists and is clean
+        const readerElement = document.getElementById(scannerId);
+        if (!readerElement) {
+            console.error("Scanner element not found");
+            return;
+        }
+        readerElement.innerHTML = "";
         
         scannerRef.current = new Html5QrcodeScanner(
             scannerId,
@@ -22,8 +31,21 @@ const QRScanner = ({ onScanSuccess, onScanFailure }) => {
 
         scannerRef.current.render(
             (decodedText, decodedResult) => {
+                // Prevent multiple callbacks for the same scan
+                if (hasScannedRef.current) return;
+                hasScannedRef.current = true;
+                
                 setScanResult(decodedText);
                 if (onScanSuccess) onScanSuccess(decodedText);
+                // Stop scanning after success to prevent multiple alerts
+                if (scannerRef.current) {
+                    try {
+                        scannerRef.current.clear().catch(err => console.error("Failed to stop scanner", err));
+                        scannerRef.current = null;
+                    } catch (e) {
+                        console.error("Error stopping scanner", e);
+                    }
+                }
             },
             (error) => {
                 if (onScanFailure) onScanFailure(error);
@@ -31,6 +53,7 @@ const QRScanner = ({ onScanSuccess, onScanFailure }) => {
         );
 
         return () => {
+            // Cleanup
             if (scannerRef.current) {
                 try {
                     scannerRef.current.clear().catch(error => {
@@ -43,15 +66,16 @@ const QRScanner = ({ onScanSuccess, onScanFailure }) => {
             }
             
             // Clear the DOM element content
-            const readerElement = document.getElementById(scannerIdRef.current);
-            if (readerElement) {
-                readerElement.innerHTML = "";
+            const element = document.getElementById(scannerId);
+            if (element) {
+                element.innerHTML = "";
             }
             
-            // Reset mounted flag so component can reinitialize on next mount
-            isMountedRef.current = false;
+            // Reset flags
+            hasInitializedRef.current = false;
+            hasScannedRef.current = false;
         };
-    }, []); // Empty deps - only run once
+    }, []); // Empty deps - only run once per mount
 
     return (
         <div style={{ width: '100%', textAlign: 'center' }}>

@@ -21,14 +21,11 @@ const EquipmentSession = () => {
 
         console.log("Exit Scan:", decodedText);
         
-        let action = null;
-        if (decodedText === 'gym_check_out') action = 'check_out';
-        else if (decodedText === 'gym_check_in') action = 'check_in'; // Just in case
-
-        if (action) {
+        // Check-out Logic (EquipmentSession only accepts check-out)
+        if (decodedText === 'gym_check_out') {
             try {
                 const { data, error } = await supabase.rpc('handle_occupancy', { 
-                    action_type: action 
+                    action_type: 'check_out' 
                 });
 
                 if (error) {
@@ -44,11 +41,12 @@ const EquipmentSession = () => {
                 isProcessingRef.current = false; 
             }
         } else {
-            // Legacy/Mock fallback for other QR codes (equipment switching)
-             // Logic for switching equipment would go here
-             setIsScannerOpen(false);
-             isProcessingRef.current = false;
-             navigate('/');
+            // Invalid QR code for check-out context
+            setIsScannerOpen(false);
+            isProcessingRef.current = false;
+            setTimeout(() => {
+                alert('退出用QRコードのみ有効です');
+            }, 100);
         }
     };
 
