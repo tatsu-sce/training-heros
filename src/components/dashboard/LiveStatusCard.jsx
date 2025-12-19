@@ -34,9 +34,7 @@ const LiveStatusCard = ({ data }) => {
                 <span style={{ fontSize: '4.5rem', fontWeight: '800', lineHeight: 1, color: 'var(--color-text-main)' }}>
                     {occupancy}
                 </span>
-                <span style={{ fontSize: '1.2rem', color: 'var(--color-text-dim)', paddingBottom: '0.9rem', fontWeight: '500' }}>
-                    / {maxCapacity} users
-                </span>
+                {/* Capacity removed as per user request */}
             </div>
 
             <div style={{ position: 'relative', width: '100%', height: '12px', background: 'rgba(255,255,255,0.05)', borderRadius: '999px', overflow: 'hidden' }}>
