@@ -6,11 +6,8 @@ import ProfileModal from './ProfileModal';
 
 const SocialModal = ({ isOpen, onClose }) => {
     const { user } = useAuth();
-    const [activeTab, setActiveTab] = useState('friends');
     const [friends, setFriends] = useState([]);
-    const [groups, setGroups] = useState([]);
     const [searchId, setSearchId] = useState('');
-    const [newGroupName, setNewGroupName] = useState('');
     const [loading, setLoading] = useState(false);
     const [selectedFriend, setSelectedFriend] = useState(null);
     const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -21,7 +18,6 @@ const SocialModal = ({ isOpen, onClose }) => {
     useEffect(() => {
         if (isOpen && user) {
             fetchFriends();
-            fetchGroups();
             fetchMyProfile();
         }
     }, [isOpen, user]);
@@ -32,9 +28,7 @@ const SocialModal = ({ isOpen, onClose }) => {
             setUsername(data.student_id);
         }
     };
-    // Removed saveUsername
 
-    // --- Friends Logic ---
     const fetchFriends = async () => {
         try {
             const { data: relations, error } = await supabase
@@ -66,7 +60,6 @@ const SocialModal = ({ isOpen, onClose }) => {
         if (!searchId) return;
         setLoading(true);
         try {
-            // Search by student_id
             let { data: target, error: fError } = await supabase
                 .from('profiles')
                 .select('id')
@@ -83,7 +76,6 @@ const SocialModal = ({ isOpen, onClose }) => {
                 return;
             }
 
-            // Insert friendship
             const { error } = await supabase
                 .from('friends')
                 .insert([{ user_id: user.id, friend_id: target.id, status: 'pending' }]);
@@ -171,70 +163,40 @@ const SocialModal = ({ isOpen, onClose }) => {
 
     return (
         <Modal isOpen={isOpen} onClose={onClose} title="Social & Friends">
-            <div style={{ display: 'flex', borderBottom: '1px solid rgba(255,255,255,0.1)', marginBottom: '1.5rem' }}>
-                <button
-                    onClick={() => setActiveTab('friends')}
-                    style={{
-                        padding: '0.8rem 1.5rem',
-                        background: 'none',
-                        border: 'none',
-                        borderBottom: activeTab === 'friends' ? '2px solid var(--color-primary)' : 'none',
-                        color: activeTab === 'friends' ? 'white' : 'var(--color-text-muted)',
-                        cursor: 'pointer'
-                    }}
-                >
-                    Friends
-                </button>
-                <button
-                    onClick={() => setActiveTab('groups')}
-                    style={{
-                        padding: '0.8rem 1.5rem',
-                        background: 'none',
-                        border: 'none',
-                        borderBottom: activeTab === 'groups' ? '2px solid var(--color-primary)' : 'none',
-                        color: activeTab === 'groups' ? 'white' : 'var(--color-text-muted)',
-                        cursor: 'pointer'
-                    }}
-                >
-                    Groups
-                </button>
-            </div>
-
-            {activeTab === 'friends' && (
-                <div>
-                    {/* Your ID Display */}
-                    <div style={{ marginBottom: '2rem', padding: '1rem', background: 'rgba(255,255,255,0.05)', borderRadius: '8px' }}>
-                        <p style={{ fontSize: '0.8rem', color: 'var(--color-text-dim)', marginBottom: '0.5rem' }}>Your Student ID:</p>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <code style={{ fontSize: '1.2rem', fontWeight: 'bold', color: 'var(--color-primary)' }}>
-                                {username || "Loading..."}
-                            </code>
-                        </div>
-                        <p style={{ fontSize: '0.7rem', color: 'gray', marginTop: '0.4rem' }}>
-                            ※ Share this ID with friends so they can add you.
-                        </p>
+            <div>
+                {/* Your ID Display */}
+                <div style={{ marginBottom: '2rem', padding: '1rem', background: 'rgba(255,255,255,0.05)', borderRadius: '8px' }}>
+                    <p style={{ fontSize: '0.8rem', color: 'var(--color-text-dim)', marginBottom: '0.5rem' }}>Your Student ID:</p>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <code style={{ fontSize: '1.2rem', fontWeight: 'bold', color: 'var(--color-primary)' }}>
+                            {username || "Loading..."}
+                        </code>
                     </div>
+                    <p style={{ fontSize: '0.7rem', color: 'gray', marginTop: '0.4rem' }}>
+                        ※ Share this ID with friends so they can add you.
+                    </p>
+                </div>
 
-                    {/* Add Friend */}
-                    <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '2rem' }}>
-                        <input
-                            type="text"
-                            placeholder="Enter Friend's Student ID"
-                            value={searchId}
-                            onChange={(e) => setSearchId(e.target.value)}
-                            style={{
-                                flex: 1,
-                                padding: '0.8rem',
-                                borderRadius: 'var(--radius-sm)',
-                                border: '1px solid rgba(255,255,255,0.1)',
-                                background: 'rgba(0,0,0,0.2)',
-                                color: 'white'
-                            }}
-                        />
-                        <button className="btn-primary" onClick={addFriend} disabled={loading}>
-                            Find & Add
-                        </button>
-                    </div>
+                {/* Add Friend */}
+                <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '2rem' }}>
+                    <input
+                        type="text"
+                        placeholder="Enter Friend's Student ID"
+                        value={searchId}
+                        onChange={(e) => setSearchId(e.target.value)}
+                        style={{
+                            flex: 1,
+                            padding: '0.8rem',
+                            borderRadius: 'var(--radius-sm)',
+                            border: '1px solid rgba(255,255,255,0.1)',
+                            background: 'rgba(0,0,0,0.2)',
+                            color: 'white'
+                        }}
+                    />
+                    <button className="btn-primary" onClick={addFriend} disabled={loading}>
+                        Find & Add
+                    </button>
+                </div>
 
                     <h4 style={{ marginBottom: '1rem', color: 'var(--color-text-muted)' }}>My Friends</h4>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
@@ -262,13 +224,8 @@ const SocialModal = ({ isOpen, onClose }) => {
                                         <div style={{ fontWeight: '600' }}>{friend.student_id || 'Unknown'}</div>
                                     </div>
                                 </div>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                    {friend.is_present && (
-                                        <div style={{ width: '10px', height: '10px', background: '#4ade80', borderRadius: '50%', boxShadow: '0 0 8px #4ade80' }} title="In Gym" />
-                                    )}
-                                    <span style={{ fontSize: '0.8rem', color: friend.is_present ? '#4ade80' : 'var(--color-text-muted)' }}>
-                                        {friend.is_present ? 'In Gym' : 'Offline'}
-                                    </span>
+                                <div>
+                                    <div style={{ fontWeight: '600' }}>{friend.student_id || 'Unknown'}</div>
                                 </div>
                             </div>
                         ))}
@@ -322,11 +279,11 @@ const SocialModal = ({ isOpen, onClose }) => {
                                 <div style={{ fontSize: '1rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>{group.name}</div>
                                 <div style={{ fontSize: '0.8rem', color: 'var(--color-text-dim)' }}>Tap to view</div>
                             </div>
-                        ))}
-                        {groups.length === 0 && <p style={{ color: 'var(--color-text-muted)' }}>No groups found.</p>}
-                    </div>
+                        </div>
+                    ))}
+                    {friends.length === 0 && <p style={{ color: 'var(--color-text-muted)' }}>No friends yet. Add someone!</p>}
                 </div>
-            )}
+            </div>
         </Modal>
     );
 };

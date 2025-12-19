@@ -116,6 +116,24 @@ const Dashboard = () => {
         console.error('Error handling QR code:', err);
         alert(`Failed: ${err.message || 'Unknown error'}`);
       }
+    } else if (decodedText === 'gym_check_out') {
+      try {
+        const { data, error } = await supabase.rpc('handle_occupancy', { 
+          action_type: 'check_out' 
+        });
+
+        if (error) throw error;
+
+        if (data?.duration !== undefined) {
+          alert(`Check-out confirmed! You stayed for ${data.duration} minutes.`);
+        }
+
+        navigate('/');
+        refreshProfile();
+      } catch (err) {
+        console.error('Error handling QR code:', err);
+        alert(`Failed: ${err.message || 'Unknown error'}`);
+      }
     } else {
       // Invalid QR code for check-in context
       setIsQRModalOpen(false);
@@ -145,25 +163,84 @@ const Dashboard = () => {
           onSignOut={handleSignOut}
         />
 
-        <div style={{ textAlign: 'right', flex: 1 }}>
-          <h1 className="gradient-text" style={{ fontSize: window.innerWidth < 400 ? '1.5rem' : '1.8rem', marginBottom: '0.2rem' }}>UniFit</h1>
-          <p style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem' }}>Next-Gen Fitness Tracker</p>
-          {profile?.is_present !== undefined && (
-            <span style={{ 
-              display: 'inline-block', 
-              marginTop: '0.4rem',
-              padding: '2px 10px', 
-              borderRadius: '20px', 
-              fontSize: '0.7rem', 
-              fontWeight: 'bold',
-              background: profile.is_present ? 'rgba(52, 211, 153, 0.15)' : 'rgba(156, 163, 175, 0.15)',
-              color: profile.is_present ? '#34d399' : '#9ca3af',
-              border: `1px solid ${profile.is_present ? 'rgba(52, 211, 153, 0.3)' : 'rgba(156, 163, 175, 0.3)'}`,
-              letterSpacing: '0.02em'
-            }}>
-              {profile.is_present ? '● ONLINE' : '○ AWAY'}
-            </span>
-          )}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
+          <button 
+            onClick={() => setIsQRModalOpen(true)}
+            className="pulse-glow"
+            style={{
+              width: '64px',
+              height: '64px',
+              borderRadius: '18px',
+              background: 'linear-gradient(135deg, var(--color-primary), var(--color-secondary))',
+              border: 'none',
+              color: 'white',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              boxShadow: '0 8px 20px rgba(99, 102, 241, 0.3)',
+              position: 'relative',
+              overflow: 'hidden'
+            }}
+            title="Scan QR Code"
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'translateY(-4px) scale(1.02)';
+              e.currentTarget.style.boxShadow = '0 12px 25px rgba(99, 102, 241, 0.5)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'translateY(0) scale(1)';
+              e.currentTarget.style.boxShadow = '0 8px 20px rgba(99, 102, 241, 0.3)';
+            }}
+          >
+            {/* Premium QR SVG Icon */}
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M3 3H9V9H3V3ZM5 5V7H7V5H5Z" fill="currentColor"/>
+              <path d="M3 15H9V21H3V15ZM5 17V19H7V17H5Z" fill="currentColor"/>
+              <path d="M15 3H21V9H15V3ZM17 5V7H19V5H17Z" fill="currentColor"/>
+              <path d="M15 15H17V17H15V15Z" fill="currentColor"/>
+              <path d="M17 17H19V19H17V17Z" fill="currentColor"/>
+              <path d="M19 15H21V17H19V15Z" fill="currentColor"/>
+              <path d="M15 19H17V21H15V19Z" fill="currentColor"/>
+              <path d="M19 19H21V21H19V19Z" fill="currentColor"/>
+              <path d="M11 11H13V13H11V11Z" fill="currentColor"/>
+              <path d="M11 3H13V9H11V3Z" fill="currentColor"/>
+              <path d="M3 11H9V13H3V11Z" fill="currentColor"/>
+              <path d="M15 11H21V13H15V11Z" fill="currentColor"/>
+              <path d="M11 15H13V21H11V15Z" fill="currentColor"/>
+            </svg>
+            
+            {/* Subtle Inner Glow Overlay */}
+            <div style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: 'linear-gradient(to bottom, rgba(255,255,255,0.2), transparent)',
+              pointerEvents: 'none'
+            }} />
+          </button>
+          <div style={{ textAlign: 'right' }}>
+            <h1 className="gradient-text" style={{ fontSize: window.innerWidth < 400 ? '1.5rem' : '1.8rem', marginBottom: '0.2rem', lineHeight: '1' }}>UniFit</h1>
+            <p style={{ color: 'var(--color-text-muted)', fontSize: '0.75rem', margin: 0 }}>Next-Gen Fitness Tracker</p>
+            {profile?.is_present !== undefined && (
+              <span style={{ 
+                display: 'inline-block', 
+                marginTop: '0.2rem',
+                padding: '1px 8px', 
+                borderRadius: '20px', 
+                fontSize: '0.65rem', 
+                fontWeight: 'bold',
+                background: profile.is_present ? 'rgba(52, 211, 153, 0.15)' : 'rgba(156, 163, 175, 0.15)',
+                color: profile.is_present ? '#34d399' : '#9ca3af',
+                border: `1px solid ${profile.is_present ? 'rgba(52, 211, 153, 0.3)' : 'rgba(156, 163, 175, 0.3)'}`,
+                letterSpacing: '0.02em'
+              }}>
+                {profile.is_present ? '● CHECKED IN' : '○ AWAY'}
+              </span>
+            )}
+          </div>
         </div>
       </header>
 

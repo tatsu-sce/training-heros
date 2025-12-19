@@ -42,10 +42,13 @@ export const useOccupancy = () => {
     }, []);
 
     const percentage = Math.round((occupancy / maxCapacity) * 100);
-
-    let status = 'low';
-    if (percentage > 50) status = 'medium';
-    if (percentage > 80) status = 'high';
+    
+    // 5-level status based on absolute user counts
+    let status = 'empty';
+    if (occupancy === 1) status = 'quiet';
+    else if (occupancy >= 2 && occupancy <= 3) status = 'moderate';
+    else if (occupancy === 4) status = 'busy';
+    else if (occupancy >= 5) status = 'crowded';
 
     return { occupancy, maxCapacity, percentage, status, loading };
 };

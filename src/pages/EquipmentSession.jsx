@@ -61,42 +61,71 @@ const EquipmentSession = () => {
                 flexWrap: 'wrap',
                 gap: '1rem'
             }}>
-                <button
-                    onClick={() => navigate('/')}
-                    style={{ 
-                        fontSize: '1.2rem', 
-                        color: 'var(--color-text-dim)', 
-                        background: 'none', 
-                        border: 'none', 
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '0.5rem',
-                        fontWeight: '600'
-                    }}
-                >
-                    ← Dashboard
-                </button>
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    <h1 className="gradient-text" style={{ fontSize: '1.5rem', marginBottom: '0.1rem', lineHeight: '1' }}>UniFit</h1>
+                    <p style={{ color: 'var(--color-text-dim)', fontSize: '0.7rem', margin: 0 }}>Workout Session</p>
+                </div>
                 <div style={{ display: 'flex', gap: '1rem' }}>
                     <button
                         onClick={() => setIsScannerOpen(true)}
-                        style={{ 
-                            display: 'flex', 
-                            alignItems: 'center', 
-                            gap: '0.5rem', 
-                            padding: '0.6rem 1.2rem',
-                            borderRadius: '2rem',
+                        className="pulse-glow"
+                        style={{
+                            width: '64px',
+                            height: '64px',
+                            borderRadius: '18px',
                             background: 'rgba(239, 68, 68, 0.1)',
                             border: '1px solid rgba(239, 68, 68, 0.3)',
                             color: '#ef4444',
                             cursor: 'pointer',
-                            fontSize: '0.9rem',
-                            fontWeight: 'bold',
-                            transition: 'all 0.2s'
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                            boxShadow: '0 8px 20px rgba(239, 68, 68, 0.2)',
+                            position: 'relative',
+                            overflow: 'hidden'
                         }}
-                        className="btn-exit-scan"
+                        title="Scan to Exit"
+                        onMouseEnter={(e) => {
+                            e.currentTarget.style.transform = 'translateY(-4px) scale(1.02)';
+                            e.currentTarget.style.background = 'rgba(239, 68, 68, 0.2)';
+                            e.currentTarget.style.boxShadow = '0 12px 25px rgba(239, 68, 68, 0.4)';
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                            e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)';
+                            e.currentTarget.style.boxShadow = '0 8px 20px rgba(239, 68, 68, 0.2)';
+                        }}
                     >
-                        <span>⏏️</span> 退出スキャン
+                        {/* Premium Logout/Exit QR icon style */}
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M3 3H9V9H3V3ZM5 5V7H7V5H5Z" fill="currentColor"/>
+                            <path d="M3 15H9V21H3V15ZM5 17V19H7V17H5Z" fill="currentColor"/>
+                            <path d="M15 3H21V9H15V3ZM17 5V7H19V5H17Z" fill="currentColor"/>
+                            <path d="M15 15H17V17H15V15Z" fill="currentColor"/>
+                            <path d="M17 17H19V19H17V17Z" fill="currentColor"/>
+                            <path d="M19 15H21V17H19V15Z" fill="currentColor"/>
+                            <path d="M15 19H17V21H15V19Z" fill="currentColor"/>
+                            <path d="M19 19H21V21H19V19Z" fill="currentColor"/>
+                            <path d="M11 11H13V13H11V11Z" fill="currentColor"/>
+                            <path d="M11 3H13V9H11V3Z" fill="currentColor"/>
+                            <path d="M3 11H9V13H3V11Z" fill="currentColor"/>
+                            <path d="M15 11H21V13H15V11Z" fill="currentColor"/>
+                            <path d="M11 15H13V21H11V15Z" fill="currentColor"/>
+                            {/* Overlaying a small logout arrow indication */}
+                            <path d="M12 12L14 10M12 12L14 14M12 12H18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                        
+                        {/* Subtle Inner Glow Overlay */}
+                        <div style={{
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            bottom: 0,
+                            background: 'linear-gradient(to bottom, rgba(255,255,255,0.1), transparent)',
+                            pointerEvents: 'none'
+                        }} />
                     </button>
                 </div>
             </header>

@@ -66,8 +66,6 @@ const HamburgerMenu = ({ onWorkout, onProfile, onSocial, onSupport, onQR, onSign
                         boxShadow: '0 4px 20px rgba(0,0,0,0.5)',
                         border: '1px solid rgba(255,255,255,0.1)'
                     }}>
-                        <MenuItem label="Workout Session" onClick={onWorkout} />
-                        <MenuItem label="QR Code" onClick={onQR} />
                         <MenuItem label="Profile" onClick={onProfile} />
                         <MenuItem label="Social & Friends" onClick={onSocial} />
                         <MenuItem label="Support / Inquiry" onClick={onSupport} />
