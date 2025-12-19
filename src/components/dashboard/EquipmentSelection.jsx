@@ -35,12 +35,13 @@ const EquipmentSelection = ({ onSelect }) => {
                     onChange={(e) => setSearchTerm(e.target.value)}
                     style={{
                         width: '100%',
-                        padding: '0.75rem 1rem',
-                        borderRadius: '0.5rem',
+                        padding: '0.8rem 1.2rem',
+                        borderRadius: '0.8rem',
                         border: '1px solid rgba(255,255,255,0.1)',
                         background: 'rgba(255,255,255,0.05)',
                         color: 'var(--color-text-main)',
-                        fontSize: '1rem'
+                        fontSize: '1rem',
+                        outline: 'none'
                     }}
                 />
             </div>
@@ -71,11 +72,11 @@ const EquipmentSelection = ({ onSelect }) => {
             {/* Equipment Grid */}
             <div style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))',
-                gap: '1rem',
-                maxHeight: '60vh',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
+                gap: '0.8rem',
+                maxHeight: '65vh',
                 overflowY: 'auto',
-                padding: '0.5rem'
+                padding: '0.5rem 0.2rem'
             }}>
                 {filteredEquipment.map(equipment => (
                     <div

@@ -25,7 +25,17 @@ const QRScanner = ({ onScanSuccess, onScanFailure }) => {
         
         scannerRef.current = new Html5QrcodeScanner(
             scannerId,
-            { fps: 10, qrbox: { width: 250, height: 250 } },
+            { 
+                fps: 10, 
+                qrbox: { width: 250, height: 250 },
+                // Prefer back camera on mobile
+                videoConstraints: {
+                    facingMode: "environment"
+                },
+                // Add support for mobile browsers
+                rememberLastUsedCamera: true,
+                supportedScanTypes: [0] // 0 = QR CODE
+            },
             /* verbose= */ false
         );
 
@@ -48,6 +58,10 @@ const QRScanner = ({ onScanSuccess, onScanFailure }) => {
                 }
             },
             (error) => {
+                // Only log significant errors, ignore frequent framing errors
+                if (error?.includes("NotFoundException") || error?.includes("NotReadableError")) {
+                    console.warn("QR Scan error:", error);
+                }
                 if (onScanFailure) onScanFailure(error);
             }
         );
