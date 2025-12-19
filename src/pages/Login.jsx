@@ -2,26 +2,35 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '../lib/supabaseClient';
+import { useAuth } from '../contexts/AuthContext';
 
 const Login = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { resetPasswordForEmail } = useAuth();
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState('');
   const [studentId, setStudentId] = useState('');
   const [password, setPassword] = useState('');
   const [isSignUp, setIsSignUp] = useState(false);
-  // State for email confirmation screen
+  const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [showEmailSent, setShowEmailSent] = useState(false);
   const [error, setError] = useState(null);
+  const [message, setMessage] = useState(null);
 
   const handleAuth = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
+    setMessage(null);
 
     try {
-      if (isSignUp) {
+      if (isForgotPassword) {
+        const { error } = await resetPasswordForEmail(email);
+        if (error) throw error;
+        setMessage('Password reset link has been sent to your email.');
+        setShowEmailSent(true);
+      } else if (isSignUp) {
         const { error } = await supabase.auth.signUp({
           email,
           password,
@@ -63,14 +72,18 @@ const Login = () => {
           </div>
           <h2 style={{ marginBottom: '1rem' }}>Check Your Email</h2>
           <p style={{ color: 'var(--color-text-muted)', marginBottom: '2rem' }}>
-            We've sent a confirmation link to:<br />
+            {isForgotPassword ? "We've sent a password reset link to:" : "We've sent a confirmation link to:"}<br />
             <strong style={{ color: 'white' }}>{email}</strong>
           </p>
           <p style={{ fontSize: '0.9rem', color: 'var(--color-text-dim)', marginBottom: '2rem' }}>
-            Please check your inbox (and spam folder) and click the link to verify your account.
+            Please check your inbox (and spam folder) and click the link to {isForgotPassword ? 'reset your password' : 'verify your account'}.
           </p>
           <button
-            onClick={() => setShowEmailSent(false)}
+            onClick={() => {
+              setShowEmailSent(false);
+              setIsForgotPassword(false);
+              setIsSignUp(false);
+            }}
             className="btn-secondary"
             style={{ width: '100%' }}
           >
@@ -90,7 +103,9 @@ const Login = () => {
       <div className="glass-panel" style={{ padding: '3rem', width: '100%', maxWidth: '420px', zIndex: 1 }}>
         <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
           <h1 className="gradient-text" style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>UniFit</h1>
-          <p style={{ color: 'var(--color-text-muted)' }}>{t('welcome')}</p>
+          <p style={{ color: 'var(--color-text-muted)' }}>
+            {isForgotPassword ? 'Reset Password' : (isSignUp ? 'Create Account' : t('welcome'))}
+          </p>
         </div>
 
         {error && (
@@ -114,7 +129,7 @@ const Login = () => {
             />
           </div>
 
-          {isSignUp && (
+          {isSignUp && !isForgotPassword && (
             <div className="fade-in">
               <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--color-text-dim)' }}>Student ID</label>
               <input
@@ -130,19 +145,21 @@ const Login = () => {
             </div>
           )}
 
-          <div>
-            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--color-text-dim)' }}>Password</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              style={{ width: '100%', padding: '0.8rem 1rem', borderRadius: 'var(--radius-md)', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(0,0,0,0.2)', color: 'white', outline: 'none', transition: 'border-color 0.2s' }}
-              placeholder="••••••••"
-              onFocus={(e) => e.target.style.borderColor = 'var(--color-primary)'}
-              onBlur={(e) => e.target.style.borderColor = 'rgba(255,255,255,0.1)'}
-            />
-          </div>
+          {!isForgotPassword && (
+            <div>
+              <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--color-text-dim)' }}>Password</label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                style={{ width: '100%', padding: '0.8rem 1rem', borderRadius: 'var(--radius-md)', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(0,0,0,0.2)', color: 'white', outline: 'none', transition: 'border-color 0.2s' }}
+                placeholder="••••••••"
+                onFocus={(e) => e.target.style.borderColor = 'var(--color-primary)'}
+                onBlur={(e) => e.target.style.borderColor = 'rgba(255,255,255,0.1)'}
+              />
+            </div>
+          )}
 
           <button
             type="submit"
@@ -150,18 +167,51 @@ const Login = () => {
             disabled={loading}
             style={{ marginTop: '1rem', justifyContent: 'center', opacity: loading ? 0.7 : 1 }}
           >
-            {loading ? 'Processing...' : (isSignUp ? 'Sign Up' : 'Sign In')}
+            {loading ? 'Processing...' : (isForgotPassword ? 'Send Reset Link' : (isSignUp ? 'Sign Up' : 'Sign In'))}
           </button>
         </form>
 
+        {!isForgotPassword && (
+          <div style={{ textAlign: 'center', marginTop: '1rem' }}>
+            <button
+              onClick={() => {
+                setIsForgotPassword(true);
+                setIsSignUp(false);
+                setError(null);
+              }}
+              style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem', textDecoration: 'underline' }}
+            >
+              Forgot Password?
+            </button>
+          </div>
+        )}
+
         <div style={{ marginTop: '2rem', textAlign: 'center', fontSize: '0.9rem', color: 'var(--color-text-dim)' }}>
-          {isSignUp ? "Already have an account?" : "Don't have an account?"}
-          <button
-            onClick={() => setIsSignUp(!isSignUp)}
-            style={{ color: 'var(--color-primary)', marginLeft: '0.5rem', fontWeight: '600', textDecoration: 'underline', textUnderlineOffset: '4px' }}
-          >
-            {isSignUp ? 'Sign In' : 'Sign Up'}
-          </button>
+          {isForgotPassword ? (
+            <button
+              onClick={() => {
+                setIsForgotPassword(false);
+                setError(null);
+              }}
+              style={{ color: 'var(--color-primary)', fontWeight: '600', textDecoration: 'underline', textUnderlineOffset: '4px' }}
+            >
+              Back to Sign In
+            </button>
+          ) : (
+            <>
+              {isSignUp ? "Already have an account?" : "Don't have an account?"}
+              <button
+                onClick={() => {
+                  setIsSignUp(!isSignUp);
+                  setIsForgotPassword(false);
+                  setError(null);
+                }}
+                style={{ color: 'var(--color-primary)', marginLeft: '0.5rem', fontWeight: '600', textDecoration: 'underline', textUnderlineOffset: '4px' }}
+              >
+                {isSignUp ? 'Sign In' : 'Sign Up'}
+              </button>
+            </>
+          )}
         </div>
       </div>
     </div>
