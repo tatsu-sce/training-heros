@@ -7,15 +7,21 @@ const LiveStatusCard = ({ data }) => {
 
     if (loading) return <div className="glass-panel" style={{ height: '200px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Loading status...</div>;
 
-    let statusColor = 'var(--color-success)';
-    let statusText = t('low_traffic');
+    let statusColor = '#22d3ee'; // Cyan (Empty)
+    let statusText = "ガラガラ";
 
-    if (status === 'medium') {
-        statusColor = 'var(--color-warning)';
-        statusText = "Moderate Traffic";
-    } else if (status === 'high') {
-        statusColor = 'var(--color-error)';
-        statusText = "High Traffic - Busy";
+    if (status === 'quiet') {
+        statusColor = '#60a5fa'; // Blue
+        statusText = "空いています";
+    } else if (status === 'moderate') {
+        statusColor = '#34d399'; // Green
+        statusText = "普通";
+    } else if (status === 'busy') {
+        statusColor = '#facc15'; // Yellow
+        statusText = "やや混雑";
+    } else if (status === 'crowded') {
+        statusColor = '#f87171'; // Red
+        statusText = "混雑";
     }
 
     return (
