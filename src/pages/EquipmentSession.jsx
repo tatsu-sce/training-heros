@@ -11,29 +11,45 @@ const EquipmentSession = () => {
     const navigate = useNavigate();
     const [isScannerOpen, setIsScannerOpen] = useState(false);
     const [scanResult, setScanResult] = useState('');
+    const isProcessingRef = React.useRef(false); // Lock to prevent multiple scans
 
     const handleExitScan = async (decodedText) => {
-        // Here we would process the "Check-out" or "Equipment Switch" logic
+        // Prevent multiple scans
+        if (isProcessingRef.current) return;
+        isProcessingRef.current = true;
+        // Do NOT close immediately: setIsScannerOpen(false);
+
         console.log("Exit Scan:", decodedText);
-        setScanResult(decodedText);
+        
+        let action = null;
+        if (decodedText === 'gym_check_out') action = 'check_out';
+        else if (decodedText === 'gym_check_in') action = 'check_in'; // Just in case
 
-        // Mock logic: If QR starts with "EXIT" or similar, log check-out.
-        // For now, let's assume any scan here ends the session or logs exit.
+        if (action) {
+            try {
+                const { data, error } = await supabase.rpc('handle_occupancy', { 
+                    action_type: action 
+                });
 
-        // Example: Log exit occupancy
-        /*
-        const { error } = await supabase.from('occupancy_logs').insert([{
-            user_id: user.id,
-            action: 'check_out', 
-            details: decodedText
-        }]);
-        */
+                if (error) {
+                    throw error;
+                }
 
-        alert(`Exit/Switch Confirmed: ${decodedText}`);
-        setIsScannerOpen(false);
-        // Navigate back to dashboard or stay? User said "withdraw QR code" on equipment screen.
-        // Probably navigate back to Dashboard after exit.
-        navigate('/');
+                setIsScannerOpen(false); 
+                isProcessingRef.current = false;
+                navigate('/'); // Return to dashboard
+            } catch (err) {
+                console.error("Error handling exit scan:", err);
+                alert(`Failed: ${err.message || 'Unknown error'}`);
+                isProcessingRef.current = false; 
+            }
+        } else {
+            // Legacy/Mock fallback for other QR codes (equipment switching)
+             // Logic for switching equipment would go here
+             setIsScannerOpen(false);
+             isProcessingRef.current = false;
+             navigate('/');
+        }
     };
 
     return (
@@ -70,10 +86,10 @@ const EquipmentSession = () => {
             </p>
 
             {/* Exit Scanner Modal */}
-            <Modal isOpen={isScannerOpen} onClose={() => setIsScannerOpen(false)} title="Scan to Exit / Switch">
+            <Modal isOpen={isScannerOpen} onClose={() => { setIsScannerOpen(false); isProcessingRef.current = false; }} title="Scan to Exit / Switch">
                 <div style={{ textAlign: 'center', marginBottom: '1rem' }}>
                     <p style={{ marginBottom: '1rem', color: 'var(--color-text-muted)' }}>Scan the QR code at the exit or on the next machine.</p>
-                    <QRScanner onScanSuccess={handleExitScan} />
+                    <QRScanner key={isScannerOpen ? 'open' : 'closed'} onScanSuccess={handleExitScan} />
                 </div>
             </Modal>
         </div>

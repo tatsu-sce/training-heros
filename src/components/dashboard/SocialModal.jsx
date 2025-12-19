@@ -12,9 +12,8 @@ const SocialModal = ({ isOpen, onClose }) => {
     const [newGroupName, setNewGroupName] = useState('');
     const [loading, setLoading] = useState(false);
 
-    const [username, setUsername] = useState('');
-    const [isEditingId, setIsEditingId] = useState(false);
-    const [newIdInput, setNewIdInput] = useState('');
+    const [username, setUsername] = useState(''); // repurposing this state to hold student_id for display
+    // Removed isEditingId, newIdInput as manual setting is deprecated
 
     useEffect(() => {
         if (isOpen && user) {
@@ -25,49 +24,15 @@ const SocialModal = ({ isOpen, onClose }) => {
     }, [isOpen, user]);
 
     const fetchMyProfile = async () => {
-        const { data } = await supabase.from('profiles').select('username').eq('id', user.id).single();
-        if (data && data.username) {
-            setUsername(data.username);
-            setNewIdInput(data.username);
+        const { data } = await supabase.from('profiles').select('student_id').eq('id', user.id).single();
+        if (data && data.student_id) {
+            setUsername(data.student_id);
         }
     };
-
-    const saveUsername = async () => {
-        if (!newIdInput.trim()) return;
-        setLoading(true);
-        try {
-            const { error } = await supabase
-                .from('profiles')
-                .update({ username: newIdInput.trim() })
-                .eq('id', user.id);
-
-            if (error) {
-                if (error.code === '23505') { // Unique violation
-                    alert("このIDは既に使用されています。別のIDを指定してください。\n(This ID is already taken. Please choose another.)");
-                } else {
-                    throw error;
-                }
-                return;
-            }
-
-            setUsername(newIdInput.trim());
-            setIsEditingId(false);
-            alert("IDを保存しました！\n(ID Saved!)");
-        } catch (err) {
-            console.error(err);
-            alert("エラーが発生しました。");
-        } finally {
-            setLoading(false);
-        }
-    };
+    // Removed saveUsername
 
     // --- Friends Logic ---
     const fetchFriends = async () => {
-        // Fetch accepted friends
-        // Simpler approach: fetch all rows where user is user_id or friend_id
-        // Then manually fetch profile details.
-        // For simplicity in this demo, we assume user_id owns the relation.
-
         try {
             const { data: relations, error } = await supabase
                 .from('friends')
@@ -97,26 +62,15 @@ const SocialModal = ({ isOpen, onClose }) => {
         if (!searchId) return;
         setLoading(true);
         try {
-            // Search by username OR id
-            // First try username
+            // Search by student_id
             let { data: target, error: fError } = await supabase
                 .from('profiles')
                 .select('id')
-                .eq('username', searchId)
+                .eq('student_id', searchId)
                 .single();
 
-            // If not found by username, try searching by UUID (if input looks like UUID)
-            if (!target && searchId.length > 20) {
-                const { data: targetById } = await supabase
-                    .from('profiles')
-                    .select('id')
-                    .eq('id', searchId)
-                    .single();
-                target = targetById;
-            }
-
             if (!target) {
-                alert('User not found. Please check the ID.');
+                alert('User not found. Please check the Student ID.');
                 return;
             }
 
@@ -218,36 +172,16 @@ const SocialModal = ({ isOpen, onClose }) => {
 
             {activeTab === 'friends' && (
                 <div>
-                    {/* Your ID Settings */}
+                    {/* Your ID Display */}
                     <div style={{ marginBottom: '2rem', padding: '1rem', background: 'rgba(255,255,255,0.05)', borderRadius: '8px' }}>
-                        <p style={{ fontSize: '0.8rem', color: 'var(--color-text-dim)', marginBottom: '0.5rem' }}>Your Unique ID:</p>
-                        {isEditingId ? (
-                            <div style={{ display: 'flex', gap: '0.5rem' }}>
-                                <input
-                                    type="text"
-                                    value={newIdInput}
-                                    onChange={(e) => setNewIdInput(e.target.value)}
-                                    placeholder="Set unique ID"
-                                    style={{ flex: 1, padding: '0.4rem', color: 'black' }}
-                                />
-                                <button onClick={saveUsername} disabled={loading} style={{ background: '#4ade80', border: 'none', borderRadius: '4px', padding: '0 1rem', cursor: 'pointer' }}>Save</button>
-                                <button onClick={() => setIsEditingId(false)} style={{ background: '#9ca3af', border: 'none', borderRadius: '4px', padding: '0 1rem', cursor: 'pointer' }}>Cancel</button>
-                            </div>
-                        ) : (
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                <code style={{ fontSize: '1rem', fontWeight: 'bold', color: username ? 'var(--color-primary)' : 'gray' }}>
-                                    {username || "(Not Set - using system ID)"}
-                                </code>
-                                <button
-                                    onClick={() => setIsEditingId(true)}
-                                    style={{ background: 'rgba(255,255,255,0.1)', color: 'white', border: 'none', padding: '0.3rem 0.8rem', borderRadius: '4px', fontSize: '0.8rem', cursor: 'pointer' }}
-                                >
-                                    Edit ID
-                                </button>
-                            </div>
-                        )}
+                        <p style={{ fontSize: '0.8rem', color: 'var(--color-text-dim)', marginBottom: '0.5rem' }}>Your Student ID:</p>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <code style={{ fontSize: '1.2rem', fontWeight: 'bold', color: 'var(--color-primary)' }}>
+                                {username || "Loading..."}
+                            </code>
+                        </div>
                         <p style={{ fontSize: '0.7rem', color: 'gray', marginTop: '0.4rem' }}>
-                            ※ IDは他のユーザーと重複できません。(IDs must be unique)
+                            ※ Share this ID with friends so they can add you.
                         </p>
                     </div>
 
@@ -255,7 +189,7 @@ const SocialModal = ({ isOpen, onClose }) => {
                     <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '2rem' }}>
                         <input
                             type="text"
-                            placeholder="Search by User ID (e.g. 'taro_gym')"
+                            placeholder="Enter Friend's Student ID"
                             value={searchId}
                             onChange={(e) => setSearchId(e.target.value)}
                             style={{
@@ -282,11 +216,10 @@ const SocialModal = ({ isOpen, onClose }) => {
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                                     {/* Avatar Placeholder */}
                                     <div style={{ width: '40px', height: '40px', background: '#333', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                        {friend.display_name?.charAt(0) || '?'}
+                                        {friend.student_id?.charAt(0) || '?'}
                                     </div>
                                     <div>
-                                        <div style={{ fontWeight: '600' }}>{friend.display_name || 'Unknown'}</div>
-                                        <div style={{ fontSize: '0.8rem', color: 'var(--color-text-dim)' }}>ID: {friend.username || 'System User'}</div>
+                                        <div style={{ fontWeight: '600' }}>{friend.student_id || 'Unknown'}</div>
                                     </div>
                                 </div>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>

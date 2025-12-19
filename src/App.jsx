@@ -10,6 +10,7 @@ const Dashboard = lazy(() => import('./pages/Dashboard'));
 const Login = lazy(() => import('./pages/Login'));
 const Onboarding = lazy(() => import('./pages/Onboarding'));
 const EquipmentSession = lazy(() => import('./pages/EquipmentSession'));
+const QrCodes = lazy(() => import('./pages/QrCodes'));
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
@@ -67,6 +68,7 @@ function App() {
                     <EquipmentSession />
                   </ProtectedRoute>
                 } />
+                <Route path="/qr-codes" element={<QrCodes />} />
                 <Route path="/login" element={<Login />} />
               </Routes>
             </Suspense>
