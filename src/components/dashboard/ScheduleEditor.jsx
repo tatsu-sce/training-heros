@@ -2,13 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabaseClient';
 import { useAuth } from '../../contexts/AuthContext';
 
-const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-const TIME_SLOTS = [
-    { period: 1, label: '10-12' },
-    { period: 2, label: '12-14' },
-    { period: 3, label: '14-16' },
-    { period: 4, label: '16-18' }
-];
+const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+const PERIODS = Array.from({ length: 10 }, (_, i) => i + 1); // 1 to 10
 
 const ScheduleEditor = ({ onScheduleUpdate }) => {
     const { user } = useAuth();
@@ -90,10 +85,10 @@ const ScheduleEditor = ({ onScheduleUpdate }) => {
     return (
         <div style={{ overflowX: 'auto', padding: '0.5rem' }}>
             <p style={{ color: 'var(--color-text-muted)', fontSize: '0.9rem', marginBottom: '1rem', textAlign: 'center' }}>
-                Tap slots to mark your <strong>Available Time</strong>. Empty slots mean you're busy!
+                Tap slots to mark them as <strong>Busy (Class)</strong>. Empty slots are free time!
             </p>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '50px repeat(6, 1fr)', gap: '4px', minWidth: '350px', maxWidth: '700px', margin: '0 auto' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '40px repeat(5, 1fr)', gap: '4px', minWidth: '300px', maxWidth: '600px', margin: '0 auto' }}>
                 {/* Header Row */}
                 <div style={{}}></div>
                 {DAYS.map(day => (
@@ -103,17 +98,17 @@ const ScheduleEditor = ({ onScheduleUpdate }) => {
                 ))}
 
                 {/* Grid Rows */}
-                {TIME_SLOTS.map(slot => (
-                    <React.Fragment key={slot.period}>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>
-                            {slot.label}
+                {PERIODS.map(period => (
+                    <React.Fragment key={period}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>
+                            {period}
                         </div>
                         {DAYS.map(day => {
-                            const active = isOccupied(day, slot.period);
+                            const active = isOccupied(day, period);
                             return (
                                 <button
-                                    key={`${day}-${slot.period}`}
-                                    onClick={() => toggleSlot(day, slot.period)}
+                                    key={`${day}-${period}`}
+                                    onClick={() => toggleSlot(day, period)}
                                     style={{
                                         aspectRatio: '1',
                                         borderRadius: '4px',
@@ -123,7 +118,7 @@ const ScheduleEditor = ({ onScheduleUpdate }) => {
                                         transition: 'transform 0.1s',
                                         opacity: active ? 1 : 0.5
                                     }}
-                                    title={`${day} ${slot.label}`}
+                                    title={`${day} Period ${period}`}
                                     onMouseEnter={(e) => e.target.style.opacity = '1'}
                                     onMouseLeave={(e) => e.target.style.opacity = active ? '1' : '0.5'}
                                 />
@@ -136,11 +131,11 @@ const ScheduleEditor = ({ onScheduleUpdate }) => {
             <div style={{ display: 'flex', justifyContent: 'center', gap: '2rem', marginTop: '1rem', fontSize: '0.8rem', color: 'var(--color-text-dim)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                     <div style={{ width: '12px', height: '12px', background: 'var(--color-primary)', borderRadius: '2px' }}></div>
-                    Available
+                    Busy
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                     <div style={{ width: '12px', height: '12px', background: 'rgba(255,255,255,0.05)', borderRadius: '2px' }}></div>
-                    Busy
+                    Free
                 </div>
             </div>
         </div>

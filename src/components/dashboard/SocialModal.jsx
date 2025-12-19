@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabaseClient';
 import { useAuth } from '../../contexts/AuthContext';
 import Modal from '../ui/Modal';
+import ProfileModal from './ProfileModal';
 
 const SocialModal = ({ isOpen, onClose }) => {
     const { user } = useAuth();
@@ -11,6 +12,8 @@ const SocialModal = ({ isOpen, onClose }) => {
     const [searchId, setSearchId] = useState('');
     const [newGroupName, setNewGroupName] = useState('');
     const [loading, setLoading] = useState(false);
+    const [selectedFriend, setSelectedFriend] = useState(null);
+    const [isProfileOpen, setIsProfileOpen] = useState(false);
 
     const [username, setUsername] = useState(''); // repurposing this state to hold student_id for display
     // Removed isEditingId, newIdInput as manual setting is deprecated
@@ -37,7 +40,8 @@ const SocialModal = ({ isOpen, onClose }) => {
             const { data: relations, error } = await supabase
                 .from('friends')
                 .select('friend_id')
-                .eq('user_id', user.id);
+                .eq('user_id', user.id)
+                .eq('status', 'accepted');
 
             if (error) throw error;
             if (relations.length === 0) {
@@ -82,11 +86,11 @@ const SocialModal = ({ isOpen, onClose }) => {
             // Insert friendship
             const { error } = await supabase
                 .from('friends')
-                .insert([{ user_id: user.id, friend_id: target.id, status: 'accepted' }]);
+                .insert([{ user_id: user.id, friend_id: target.id, status: 'pending' }]);
 
             if (error) throw error;
 
-            alert('Friend added!');
+            alert('リクエストを送信しました');
             setSearchId('');
             fetchFriends();
         } catch (err) {
@@ -111,6 +115,32 @@ const SocialModal = ({ isOpen, onClose }) => {
             setGroups(data);
         } catch (err) {
             console.error(err);
+        }
+    };
+
+    const removeFriend = async (friendId) => {
+        try {
+            // Delete friendship (both sides if mutual, but for now we follow the user_id logic)
+            const { error } = await supabase
+                .from('friends')
+                .delete()
+                .eq('user_id', user.id)
+                .eq('friend_id', friendId);
+
+            if (error) throw error;
+
+            // Also delete the reverse direction if it exists (for mutual)
+            await supabase
+                .from('friends')
+                .delete()
+                .eq('user_id', friendId)
+                .eq('friend_id', user.id);
+
+            alert('フレンドを削除しました');
+            fetchFriends();
+        } catch (err) {
+            console.error('Error removing friend:', err);
+            alert('削除に失敗しました');
         }
     };
 
@@ -209,10 +239,20 @@ const SocialModal = ({ isOpen, onClose }) => {
                     <h4 style={{ marginBottom: '1rem', color: 'var(--color-text-muted)' }}>My Friends</h4>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
                         {friends.map(friend => (
-                            <div key={friend.id} style={{
-                                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                                padding: '1rem', background: 'rgba(255,255,255,0.03)', borderRadius: 'var(--radius-sm)'
-                            }}>
+                            <div
+                                key={friend.id}
+                                onClick={() => {
+                                    setSelectedFriend(friend);
+                                    setIsProfileOpen(true);
+                                }}
+                                style={{
+                                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                                    padding: '1rem', background: 'rgba(255,255,255,0.03)', borderRadius: 'var(--radius-sm)',
+                                    cursor: 'pointer', transition: 'background 0.2s'
+                                }}
+                                onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.06)'}
+                                onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.03)'}
+                            >
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                                     {/* Avatar Placeholder */}
                                     <div style={{ width: '40px', height: '40px', background: '#333', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -234,6 +274,17 @@ const SocialModal = ({ isOpen, onClose }) => {
                         ))}
                         {friends.length === 0 && <p style={{ color: 'var(--color-text-muted)' }}>No friends yet. Add someone!</p>}
                     </div>
+
+                    {/* Friend Profile Modal */}
+                    {selectedFriend && (
+                        <ProfileModal
+                            isOpen={isProfileOpen}
+                            onClose={() => setIsProfileOpen(false)}
+                            profile={selectedFriend}
+                            isFriendProfile={true}
+                            onRemoveFriend={removeFriend}
+                        />
+                    )}
                 </div>
             )}
 

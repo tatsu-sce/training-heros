@@ -16,7 +16,6 @@ const Onboarding = () => {
     const [fitnessGoal, setFitnessGoal] = useState('General Fitness');
     const [height, setHeight] = useState('');
     const [weight, setWeight] = useState('');
-    const [notificationEnabled, setNotificationEnabled] = useState(false);
 
     const handleComplete = async () => {
         if (!user) return;
@@ -41,7 +40,6 @@ const Onboarding = () => {
                 weight: w,
                 body_fat: initialBodyFat,
                 last_workout_at: new Date(),
-                notification_enabled: notificationEnabled,
                 // updated_at removed
             };
 
@@ -71,7 +69,7 @@ const Onboarding = () => {
 
                 {/* Step Indicators */}
                 <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '2rem', justifyContent: 'center' }}>
-                    {[1, 2, 3, 4, 5].map(i => (
+                    {[1, 2, 3, 4].map(i => (
                         <div key={i} style={{
                             width: '30px', height: '4px', borderRadius: '2px',
                             background: step >= i ? 'var(--color-primary)' : 'rgba(255,255,255,0.1)'
@@ -197,7 +195,7 @@ const Onboarding = () => {
                 {step === 4 && (
                     <div className="fade-in">
                         <div style={{ marginBottom: '1.5rem' }}>
-                            <span style={{ color: 'var(--color-text-dim)', fontSize: '0.9rem', display: 'block', marginBottom: '0.5rem' }}>Set your Available Time (Tap to Mark)</span>
+                            <span style={{ color: 'var(--color-text-dim)', fontSize: '0.9rem', display: 'block', marginBottom: '0.5rem' }}>Set your Class Schedule (Tap Busy Slots)</span>
                             <div style={{ maxHeight: '350px', overflowY: 'auto', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', background: 'rgba(0,0,0,0.2)' }}>
                                 <ScheduleEditor />
                             </div>
@@ -207,48 +205,10 @@ const Onboarding = () => {
                             <button
                                 className="btn-primary"
                                 style={{ flex: 1 }}
-                                onClick={() => setStep(5)}
-                            >
-                                Next
-                            </button>
-                        </div>
-                    </div>
-                )}
-
-                {/* Step 5: Notification Permission */}
-                {step === 5 && (
-                    <div className="fade-in">
-                        <div style={{ marginBottom: '1.5rem', textAlign: 'center' }}>
-                            <h3 style={{ fontSize: '1.3rem', marginBottom: '1rem', color: 'var(--color-primary)' }}>Stay Updated 📱</h3>
-                            <p style={{ fontSize: '1rem', color: 'var(--color-text-muted)', marginBottom: '1.5rem', lineHeight: '1.6' }}>
-                                Get notified when the training center is less crowded during your available times!
-                            </p>
-                            <p style={{ fontSize: '0.9rem', color: 'var(--color-text-dim)', marginBottom: '2rem' }}>
-                                We'll let you know when there are 10 or fewer people at the gym during times you marked as available.
-                            </p>
-                        </div>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                            <button
-                                className="btn-primary"
-                                style={{ width: '100%', padding: '1rem' }}
-                                onClick={() => {
-                                    setNotificationEnabled(true);
-                                    handleComplete();
-                                }}
+                                onClick={handleComplete}
                                 disabled={loading}
                             >
-                                {loading ? 'Saving...' : '✓ Enable Notifications'}
-                            </button>
-                            <button
-                                className="btn-secondary"
-                                style={{ width: '100%', padding: '1rem' }}
-                                onClick={() => {
-                                    setNotificationEnabled(false);
-                                    handleComplete();
-                                }}
-                                disabled={loading}
-                            >
-                                Skip for Now
+                                {loading ? 'Saving...' : 'Finish Setup'}
                             </button>
                         </div>
                     </div>
