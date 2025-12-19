@@ -53,10 +53,27 @@ const EquipmentSession = () => {
 
     return (
         <div className="container" style={{ paddingTop: '2rem', paddingBottom: '4rem' }}>
-            <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+            <header style={{ 
+                display: 'flex', 
+                justifyContent: 'space-between', 
+                alignItems: 'center', 
+                marginBottom: '2rem',
+                flexWrap: 'wrap',
+                gap: '1rem'
+            }}>
                 <button
                     onClick={() => navigate('/')}
-                    style={{ fontSize: '1.5rem', color: 'var(--color-text-muted)', background: 'none', border: 'none', cursor: 'pointer' }}
+                    style={{ 
+                        fontSize: '1.2rem', 
+                        color: 'var(--color-text-dim)', 
+                        background: 'none', 
+                        border: 'none', 
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.5rem',
+                        fontWeight: '600'
+                    }}
                 >
                     ← Dashboard
                 </button>

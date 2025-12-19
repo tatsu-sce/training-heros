@@ -128,7 +128,14 @@ const Dashboard = () => {
 
   return (
     <div className="container" style={{ paddingTop: '2rem', paddingBottom: '4rem' }}>
-      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+      <header style={{ 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center', 
+        marginBottom: '2rem',
+        flexWrap: 'wrap',
+        gap: '1rem'
+      }}>
         <HamburgerMenu
           onWorkout={() => navigate('/workout')}
           onProfile={() => setIsProfileModalOpen(true)}
@@ -138,22 +145,23 @@ const Dashboard = () => {
           onSignOut={handleSignOut}
         />
 
-        <div style={{ textAlign: 'right' }}>
-          <h1 className="gradient-text" style={{ fontSize: '1.8rem', marginBottom: '0.2rem' }}>UniFit</h1>
-          <p style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem' }}>Next-Gen Fitness Tracker</p>
+        <div style={{ textAlign: 'right', flex: 1 }}>
+          <h1 className="gradient-text" style={{ fontSize: window.innerWidth < 400 ? '1.5rem' : '1.8rem', marginBottom: '0.2rem' }}>UniFit</h1>
+          <p style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem' }}>Next-Gen Fitness Tracker</p>
           {profile?.is_present !== undefined && (
             <span style={{ 
               display: 'inline-block', 
-              marginTop: '0.5rem',
-              padding: '2px 8px', 
-              borderRadius: '12px', 
-              fontSize: '0.75rem', 
+              marginTop: '0.4rem',
+              padding: '2px 10px', 
+              borderRadius: '20px', 
+              fontSize: '0.7rem', 
               fontWeight: 'bold',
-              background: profile.is_present ? 'rgba(16, 185, 129, 0.2)' : 'rgba(107, 114, 128, 0.2)',
+              background: profile.is_present ? 'rgba(52, 211, 153, 0.15)' : 'rgba(156, 163, 175, 0.15)',
               color: profile.is_present ? '#34d399' : '#9ca3af',
-              border: `1px solid ${profile.is_present ? 'rgba(16, 185, 129, 0.3)' : 'rgba(107, 114, 128, 0.3)'}`
+              border: `1px solid ${profile.is_present ? 'rgba(52, 211, 153, 0.3)' : 'rgba(156, 163, 175, 0.3)'}`,
+              letterSpacing: '0.02em'
             }}>
-              {profile.is_present ? '● Checking In' : '○ Away'}
+              {profile.is_present ? '● ONLINE' : '○ AWAY'}
             </span>
           )}
         </div>
@@ -196,7 +204,12 @@ const Dashboard = () => {
       </div>
 
       {/* 2. Summary & Avatar (Middle) */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
+      <div style={{ 
+        display: 'grid', 
+        gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', 
+        gap: '1.5rem', 
+        marginBottom: '2rem' 
+      }}>
         {/* Left Column: Summary & Friends */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
           <UsageSummary />
@@ -204,15 +217,22 @@ const Dashboard = () => {
         </div>
 
         {/* Right Column: Avatar */}
-        <div className="glass-panel" style={{ padding: '0', display: 'flex', flexDirection: 'column', overflow: 'hidden', minHeight: '400px', position: 'relative' }}>
+        <div className="glass-panel" style={{ 
+          padding: '0', 
+          display: 'flex', 
+          flexDirection: 'column', 
+          overflow: 'hidden', 
+          minHeight: window.innerWidth < 600 ? '350px' : '450px', 
+          position: 'relative' 
+        }}>
           <div style={{ padding: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', zIndex: 10 }}>
-            <h3>My Avatar</h3>
-            <span style={{ fontSize: '0.8rem', background: 'rgba(99, 102, 241, 0.2)', color: '#818cf8', padding: '2px 8px', borderRadius: '4px' }}>Lv. {Math.floor(Object.values(muscleStats).reduce((a, b) => a + b, 0))}</span>
+            <h3 style={{ fontSize: '1.1rem' }}>My Avatar</h3>
+            <span style={{ fontSize: '0.8rem', background: 'rgba(99, 102, 241, 0.2)', color: '#818cf8', padding: '2px 10px', borderRadius: '2rem' }}>LV. {Math.floor(Object.values(muscleStats).reduce((a, b) => a + b, 0))}</span>
           </div>
 
           <div style={{ flex: 1, position: 'relative' }}>
             <AvatarScene muscleStats={muscleStats} bodyStats={bodyStats} />
-            <div style={{ position: 'absolute', bottom: '1rem', left: '0', width: '100%', display: 'flex', justifyContent: 'center', gap: '0.5rem', flexWrap: 'wrap', padding: '0 0.5rem' }}>
+            <div style={{ position: 'absolute', bottom: '1.2rem', left: '0', width: '100%', display: 'flex', justifyContent: 'center', gap: '0.6rem', flexWrap: 'wrap', padding: '0 0.8rem' }}>
               {[
                 { label: 'Chest', key: 'chest' },
                 { label: 'Arms', key: 'arms' },
@@ -222,18 +242,19 @@ const Dashboard = () => {
                   key={part.key}
                   onClick={() => trainMuscle(part.key)}
                   style={{
-                    background: 'rgba(0,0,0,0.5)',
+                    background: 'rgba(0,0,0,0.6)',
                     color: 'white',
-                    padding: '0.3rem 0.6rem',
-                    borderRadius: '4px',
-                    fontSize: '0.75rem',
-                    backdropFilter: 'blur(4px)',
+                    padding: '0.4rem 0.8rem',
+                    borderRadius: '2rem',
+                    fontSize: '0.8rem',
+                    backdropFilter: 'blur(8px)',
                     border: '1px solid rgba(255,255,255,0.2)',
                     cursor: 'pointer',
-                    zIndex: 10
+                    zIndex: 10,
+                    fontWeight: '600'
                   }}
                 >
-                  + {part.label}
+                  +{part.label}
                 </button>
               ))}
             </div>
