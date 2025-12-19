@@ -26,7 +26,7 @@ const Dashboard = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const occupancyData = useOccupancy();
-  const { stats: muscleStats, bodyStats, profile, trainMuscle } = useMuscleStats();
+  const { stats: muscleStats, bodyStats, profile, trainMuscle, refreshProfile } = useMuscleStats();
 
   const [isQRModalOpen, setIsQRModalOpen] = useState(false);
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
@@ -41,6 +41,7 @@ const Dashboard = () => {
   const [mySchedule, setMySchedule] = useState([]);
   const [recommendation, setRecommendation] = useState("Loading recommendations...");
   const [currentGoal, setCurrentGoal] = useState('General Fitness');
+  const isProcessingRef = React.useRef(false);
 
   // Check Onboarding Status
   useEffect(() => {
@@ -95,11 +96,34 @@ const Dashboard = () => {
     await signOut();
   };
 
-  const handleScanSuccess = (decodedText) => {
+  const handleScanSuccess = async (decodedText) => {
+    if (isProcessingRef.current) return;
+    isProcessingRef.current = true;
     console.log(`Scan result: ${decodedText}`);
-    // Navigate to Equipment Session on successful entry scan
-    setIsQRModalOpen(false);
-    navigate('/workout');
+    
+    // Check-in Logic (Dashboard only accepts check-in)
+    if (decodedText === 'gym_check_in') {
+      try {
+        const { data, error } = await supabase.rpc('handle_occupancy', { 
+          action_type: 'check_in' 
+        });
+
+        if (error) throw error;
+
+        navigate('/workout');
+        refreshProfile();
+      } catch (err) {
+        console.error('Error handling QR code:', err);
+        alert(`Failed: ${err.message || 'Unknown error'}`);
+      }
+    } else {
+      // Invalid QR code for check-in context
+      setIsQRModalOpen(false);
+      isProcessingRef.current = false;
+      setTimeout(() => {
+        alert('入室用QRコードのみ有効です');
+      }, 100);
+    }
   };
 
   return (
@@ -117,6 +141,21 @@ const Dashboard = () => {
         <div style={{ textAlign: 'right' }}>
           <h1 className="gradient-text" style={{ fontSize: '1.8rem', marginBottom: '0.2rem' }}>UniFit</h1>
           <p style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem' }}>Next-Gen Fitness Tracker</p>
+          {profile?.is_present !== undefined && (
+            <span style={{ 
+              display: 'inline-block', 
+              marginTop: '0.5rem',
+              padding: '2px 8px', 
+              borderRadius: '12px', 
+              fontSize: '0.75rem', 
+              fontWeight: 'bold',
+              background: profile.is_present ? 'rgba(16, 185, 129, 0.2)' : 'rgba(107, 114, 128, 0.2)',
+              color: profile.is_present ? '#34d399' : '#9ca3af',
+              border: `1px solid ${profile.is_present ? 'rgba(16, 185, 129, 0.3)' : 'rgba(107, 114, 128, 0.3)'}`
+            }}>
+              {profile.is_present ? '● Checking In' : '○ Away'}
+            </span>
+          )}
         </div>
       </header>
 
@@ -141,10 +180,10 @@ const Dashboard = () => {
         onEditSchedule={() => setIsScheduleModalOpen(true)}
       />
 
-      <Modal isOpen={isQRModalOpen} onClose={() => setIsQRModalOpen(false)} title="Access Check-in">
+      <Modal isOpen={isQRModalOpen} onClose={() => { setIsQRModalOpen(false); isProcessingRef.current = false; }} title="Access Check-in">
         <div>
           <p style={{ marginBottom: '1rem', color: 'var(--color-text-muted)', fontSize: '0.9rem' }}>Scan the QR code at the gym entrance to enter.</p>
-          <QRScanner onScanSuccess={handleScanSuccess} />
+          <QRScanner key={isQRModalOpen ? 'open' : 'closed'} onScanSuccess={handleScanSuccess} />
         </div>
       </Modal>
 

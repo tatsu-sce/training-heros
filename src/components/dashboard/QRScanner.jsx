@@ -4,42 +4,82 @@ import { Html5QrcodeScanner } from 'html5-qrcode';
 const QRScanner = ({ onScanSuccess, onScanFailure }) => {
     const scannerRef = useRef(null);
     const [scanResult, setScanResult] = useState(null);
+    const scannerIdRef = useRef(`reader-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`);
+    const hasInitializedRef = useRef(false);
+    const hasScannedRef = useRef(false);
 
     useEffect(() => {
-        // Avoid double rendering issues in React 18 strict mode
-        if (!scannerRef.current) {
-            scannerRef.current = new Html5QrcodeScanner(
-                "reader",
-                { fps: 10, qrbox: { width: 250, height: 250 } },
-            /* verbose= */ false
-            );
+        // Prevent any double initialization
+        if (hasInitializedRef.current) return;
+        hasInitializedRef.current = true;
 
-            scannerRef.current.render(
-                (decodedText, decodedResult) => {
-                    setScanResult(decodedText);
-                    if (onScanSuccess) onScanSuccess(decodedText);
-                    // Optional: Stop scanning after success
-                    // scannerRef.current.clear(); 
-                },
-                (error) => {
-                    if (onScanFailure) onScanFailure(error);
-                }
-            );
+        const scannerId = scannerIdRef.current;
+        
+        // Ensure DOM element exists and is clean
+        const readerElement = document.getElementById(scannerId);
+        if (!readerElement) {
+            console.error("Scanner element not found");
+            return;
         }
+        readerElement.innerHTML = "";
+        
+        scannerRef.current = new Html5QrcodeScanner(
+            scannerId,
+            { fps: 10, qrbox: { width: 250, height: 250 } },
+            /* verbose= */ false
+        );
+
+        scannerRef.current.render(
+            (decodedText, decodedResult) => {
+                // Prevent multiple callbacks for the same scan
+                if (hasScannedRef.current) return;
+                hasScannedRef.current = true;
+                
+                setScanResult(decodedText);
+                if (onScanSuccess) onScanSuccess(decodedText);
+                // Stop scanning after success to prevent multiple alerts
+                if (scannerRef.current) {
+                    try {
+                        scannerRef.current.clear().catch(err => console.error("Failed to stop scanner", err));
+                        scannerRef.current = null;
+                    } catch (e) {
+                        console.error("Error stopping scanner", e);
+                    }
+                }
+            },
+            (error) => {
+                if (onScanFailure) onScanFailure(error);
+            }
+        );
 
         return () => {
+            // Cleanup
             if (scannerRef.current) {
-                scannerRef.current.clear().catch(error => {
-                    console.error("Failed to clear html5-qrcode scanner. ", error);
-                });
+                try {
+                    scannerRef.current.clear().catch(error => {
+                        console.error("Failed to clear html5-qrcode scanner. ", error);
+                    });
+                } catch (e) {
+                    console.error("Error clearing scanner", e);
+                }
                 scannerRef.current = null;
             }
+            
+            // Clear the DOM element content
+            const element = document.getElementById(scannerId);
+            if (element) {
+                element.innerHTML = "";
+            }
+            
+            // Reset flags
+            hasInitializedRef.current = false;
+            hasScannedRef.current = false;
         };
-    }, [onScanSuccess, onScanFailure]);
+    }, []); // Empty deps - only run once per mount
 
     return (
         <div style={{ width: '100%', textAlign: 'center' }}>
-            <div id="reader" style={{ width: '100%', borderRadius: '0.5rem', overflow: 'hidden' }}></div>
+            <div id={scannerIdRef.current} style={{ width: '100%', borderRadius: '0.5rem', overflow: 'hidden' }}></div>
             {scanResult && (
                 <div style={{ marginTop: '1rem', padding: '1rem', background: 'rgba(16, 185, 129, 0.1)', color: 'var(--color-success)', borderRadius: '0.5rem' }}>
                     Scanned: <strong>{scanResult}</strong>

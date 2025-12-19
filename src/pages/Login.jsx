@@ -35,6 +35,7 @@ const Login = () => {
           email,
           password,
           options: {
+            emailRedirectTo: window.location.origin,
             data: {
               student_id: studentId
             }
@@ -51,7 +52,12 @@ const Login = () => {
         navigate('/');
       }
     } catch (error) {
-      setError(error.message);
+      console.error("Auth error:", error);
+      if (error.message.includes('unique_student_id') || error.code === '23505') {
+        setError("This Student ID is already registered. Please check your ID or sign in.");
+      } else {
+        setError(error.message);
+      }
     } finally {
       setLoading(false);
     }
