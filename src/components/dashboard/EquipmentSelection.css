@@ -1,0 +1,28 @@
+.equipment-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--color-primary);
+    box-shadow: 0 8px 16px rgba(99, 102, 241, 0.2);
+}
+
+.equipment-card:hover .equipment-img {
+    transform: scale(1.1);
+}
+
+
+.equipment-selection::-webkit-scrollbar {
+    width: 8px;
+}
+
+.equipment-selection::-webkit-scrollbar-track {
+    background: rgba(255,255,255,0.05);
+    border-radius: 4px;
+}
+
+.equipment-selection::-webkit-scrollbar-thumb {
+    background: rgba(99, 102, 241, 0.5);
+    border-radius: 4px;
+}
+
+.equipment-selection::-webkit-scrollbar-thumb:hover {
+    background: rgba(99, 102, 241, 0.7);
+}
