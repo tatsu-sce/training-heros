@@ -61,22 +61,10 @@ const EquipmentSession = () => {
                 flexWrap: 'wrap',
                 gap: '1rem'
             }}>
-                <button
-                    onClick={() => navigate('/')}
-                    style={{ 
-                        fontSize: '1.2rem', 
-                        color: 'var(--color-text-dim)', 
-                        background: 'none', 
-                        border: 'none', 
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '0.5rem',
-                        fontWeight: '600'
-                    }}
-                >
-                    ← Dashboard
-                </button>
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    <h1 className="gradient-text" style={{ fontSize: '1.5rem', marginBottom: '0.1rem', lineHeight: '1' }}>UniFit</h1>
+                    <p style={{ color: 'var(--color-text-dim)', fontSize: '0.7rem', margin: 0 }}>Workout Session</p>
+                </div>
                 <div style={{ display: 'flex', gap: '1rem' }}>
                     <button
                         onClick={() => setIsScannerOpen(true)}
