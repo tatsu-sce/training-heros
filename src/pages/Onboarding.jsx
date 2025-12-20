@@ -237,7 +237,7 @@ const Onboarding = () => {
                 {step === 5 && (
                     <div className="fade-in">
                         <div style={{ marginBottom: '1.5rem' }}>
-                            <span style={{ color: 'var(--color-text-dim)', fontSize: '0.9rem', display: 'block', marginBottom: '0.5rem' }}>Set your Class Schedule (Tap Busy Slots)</span>
+                            <span style={{ color: 'var(--color-text-dim)', fontSize: '0.9rem', display: 'block', marginBottom: '0.5rem' }}>Set your Class Schedule (Tap Available Slots)</span>
                             <div style={{ maxHeight: '350px', overflowY: 'auto', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', background: 'rgba(0,0,0,0.2)' }}>
                                 <ScheduleEditor />
                             </div>

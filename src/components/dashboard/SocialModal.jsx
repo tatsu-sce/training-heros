@@ -609,6 +609,43 @@ const SocialModal = ({ isOpen, onClose }) => {
                                 onClose={() => setSelectedGroup(null)}
                                 onRefresh={fetchGroups}
                             />
+
+                            {/* Delete Group Button (Owner Only) */}
+                            {selectedGroup.owner_id === user.id && (
+                                <div style={{ marginTop: '2rem', paddingTop: '1rem', borderTop: '1px solid rgba(255,255,255,0.1)', textAlign: 'center' }}>
+                                    <button
+                                        onClick={async () => {
+                                            if (!confirm(`Are you sure you want to delete the group "${selectedGroup.name}"? This action cannot be undone.`)) return;
+
+                                            setLoading(true);
+                                            try {
+                                                const { error } = await supabase.from('groups').delete().eq('id', selectedGroup.id);
+                                                if (error) throw error;
+
+                                                alert('Group deleted.');
+                                                setSelectedGroup(null);
+                                                fetchGroups();
+                                            } catch (err) {
+                                                console.error("Error deleting group:", err);
+                                                alert("Failed to delete group.");
+                                            } finally {
+                                                setLoading(false);
+                                            }
+                                        }}
+                                        style={{
+                                            background: 'transparent',
+                                            border: '1px solid #ef4444',
+                                            color: '#ef4444',
+                                            padding: '0.8rem 1.5rem',
+                                            borderRadius: '6px',
+                                            cursor: 'pointer',
+                                            fontSize: '0.9rem'
+                                        }}
+                                    >
+                                        Delete Group
+                                    </button>
+                                </div>
+                            )}
                         </>
                     ) : (
                         <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--color-text-dim)', background: 'rgba(255,255,255,0.02)', marginTop: '2rem', borderRadius: '8px' }}>

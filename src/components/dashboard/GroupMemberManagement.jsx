@@ -145,8 +145,36 @@ const GroupMemberManagement = ({ group, isOwner, onClose, onRefresh }) => {
 
             <div style={{ maxHeight: '150px', overflowY: 'auto', marginBottom: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                 {members.map(m => (
-                    <div key={m.user_id} style={{ fontSize: '0.9rem', padding: '0.5rem', background: 'rgba(255,255,255,0.03)', borderRadius: '4px' }}>
-                        {m.profiles?.student_id || 'Unknown'} {m.user_id === group.owner_id && '👑'}
+                    <div key={m.user_id} style={{ fontSize: '0.9rem', padding: '0.5rem', background: 'rgba(255,255,255,0.03)', borderRadius: '4px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span>
+                            {m.profiles?.student_id || 'Unknown'} {m.user_id === group.owner_id && '👑'}
+                        </span>
+                        {isOwner && m.user_id !== group.owner_id && (
+                            <button
+                                onClick={async () => {
+                                    if (!confirm(`Remove ${m.profiles?.student_id}?`)) return;
+                                    try {
+                                        const { error } = await supabase.from('group_members').delete().eq('group_id', group.id).eq('user_id', m.user_id);
+                                        if (error) throw error;
+                                        fetchMemberships();
+                                    } catch (err) {
+                                        console.error(err);
+                                        alert('Failed to remove member');
+                                    }
+                                }}
+                                style={{
+                                    background: 'rgba(239, 68, 68, 0.2)',
+                                    color: '#ef4444',
+                                    border: 'none',
+                                    borderRadius: '4px',
+                                    padding: '2px 8px',
+                                    fontSize: '0.7rem',
+                                    cursor: 'pointer'
+                                }}
+                            >
+                                Remove
+                            </button>
+                        )}
                     </div>
                 ))}
             </div>
