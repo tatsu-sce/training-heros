@@ -8,10 +8,13 @@ export const useOccupancy = () => {
 
     const fetchOccupancy = async () => {
         try {
+            const threshold = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString();
+
             const { count, error } = await supabase
                 .from('profiles')
                 .select('*', { count: 'exact', head: true })
-                .eq('is_present', true);
+                .eq('is_present', true)
+                .gt('last_check_in_at', threshold);
 
             if (error) throw error;
             setOccupancy(count || 0);
@@ -28,21 +31,26 @@ export const useOccupancy = () => {
         // Realtime subscription for updates
         const channel = supabase
             .channel('public:profiles:occupancy')
-            .on('postgres_changes', 
-                { event: 'UPDATE', schema: 'public', table: 'profiles' }, 
+            .on('postgres_changes',
+                { event: 'UPDATE', schema: 'public', table: 'profiles' },
                 () => {
-                    fetchOccupancy(); // Re-fetch on any update (simple & robust)
+                    fetchOccupancy();
                 }
             )
             .subscribe();
 
+        // Periodic refresh every 5 minutes to handle stale sessions 
+        // that haven't triggered a DB update
+        const interval = setInterval(fetchOccupancy, 5 * 60 * 1000);
+
         return () => {
             supabase.removeChannel(channel);
+            clearInterval(interval);
         };
     }, []);
 
     const percentage = Math.round((occupancy / maxCapacity) * 100);
-    
+
     // 5-level status based on absolute user counts
     let status = 'empty';
     if (occupancy === 1) status = 'quiet';

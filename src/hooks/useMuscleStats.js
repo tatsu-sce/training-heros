@@ -25,7 +25,7 @@ export const useMuscleStats = () => {
             try {
                 const { data, error } = await supabase
                     .from('profiles')
-                    .select('is_present, student_id, avatar_stats, display_name, height, weight, body_fat, last_workout_at, fitness_goal')
+                    .select('is_present, last_check_in_at, student_id, avatar_stats, display_name, height, weight, body_fat, last_workout_at, fitness_goal')
                     .eq('id', user.id)
                     .single();
 
@@ -77,7 +77,13 @@ export const useMuscleStats = () => {
 
                     setStats(currentStats);
                     setBodyStats({ height: data.height || 170, bodyFat: currentBodyFat });
-                    setProfile({ display_name: data.display_name, fitness_goal: data.fitness_goal, student_id: data.student_id, is_present: data.is_present });
+                    setProfile({
+                        display_name: data.display_name,
+                        fitness_goal: data.fitness_goal,
+                        student_id: data.student_id,
+                        is_present: data.is_present,
+                        last_check_in_at: data.last_check_in_at
+                    });
                 }
             } catch (err) {
                 console.error('Unexpected error fetching stats:', err);
@@ -124,5 +130,5 @@ export const useMuscleStats = () => {
         // Let's keep it simple for now, goal impact is enough.
     };
 
-    return { stats, bodyStats, profile, loading, trainMuscle, refreshProfile: () => { setLoading(true); return supabase.from('profiles').select('is_present, student_id, avatar_stats, display_name, height, weight, body_fat, last_workout_at, fitness_goal').eq('id', user.id).single().then(({data}) => { if(data){ setProfile({ display_name: data.display_name, fitness_goal: data.fitness_goal, student_id: data.student_id, is_present: data.is_present }); } setLoading(false); }); } };
+    return { stats, bodyStats, profile, loading, trainMuscle, refreshProfile: () => { setLoading(true); return supabase.from('profiles').select('is_present, last_check_in_at, student_id, avatar_stats, display_name, height, weight, body_fat, last_workout_at, fitness_goal').eq('id', user.id).single().then(({ data }) => { if (data) { setProfile({ display_name: data.display_name, fitness_goal: data.fitness_goal, student_id: data.student_id, is_present: data.is_present, last_check_in_at: data.last_check_in_at }); } setLoading(false); }); } };
 };

@@ -19,6 +19,7 @@ import UsageSummaryModal from '../components/dashboard/UsageSummaryModal';
 import UsageSummary from '../components/dashboard/UsageSummary';
 import ActiveFriends from '../components/dashboard/ActiveFriends';
 import HamburgerMenu from '../components/dashboard/HamburgerMenu';
+import CheckoutCorrectionModal from '../components/dashboard/CheckoutCorrectionModal';
 import { supabase } from '../lib/supabaseClient';
 
 const Dashboard = () => {
@@ -35,6 +36,7 @@ const Dashboard = () => {
   const [isGoalModalOpen, setIsGoalModalOpen] = useState(false);
   const [isUsageModalOpen, setIsUsageModalOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [isCorrectionModalOpen, setIsCorrectionModalOpen] = useState(false);
 
 
   const [expandedWorkout, setExpandedWorkout] = useState(null);
@@ -43,12 +45,33 @@ const Dashboard = () => {
   const [currentGoal, setCurrentGoal] = useState('General Fitness');
   const isProcessingRef = React.useRef(false);
 
-  // Check Onboarding Status
+  // Check Onboarding & Stale Sessions
   useEffect(() => {
     if (profile && !profile.display_name) {
       navigate('/onboarding');
     }
   }, [profile, navigate]);
+
+  useEffect(() => {
+    if (profile?.is_present && profile?.last_check_in_at && !isCorrectionModalOpen) {
+      const checkStale = () => {
+        const lastCheckIn = new Date(profile.last_check_in_at).getTime();
+        const thresholdMs = 2 * 60 * 60 * 1000; // Threshold (2 hours)
+        const timeElapsed = Date.now() - lastCheckIn;
+
+        if (timeElapsed > thresholdMs) {
+          setIsCorrectionModalOpen(true);
+        } else {
+          // Schedule a check for the moment it becomes stale
+          const timer = setTimeout(() => {
+            setIsCorrectionModalOpen(true);
+          }, thresholdMs - timeElapsed + 100);
+          return () => clearTimeout(timer);
+        }
+      };
+      return checkStale();
+    }
+  }, [profile, isCorrectionModalOpen]);
 
   useEffect(() => {
     if (profile?.fitness_goal) {
@@ -265,6 +288,12 @@ const Dashboard = () => {
         currentGoal={currentGoal}
         mySchedule={mySchedule}
         onEditSchedule={() => setIsScheduleModalOpen(true)}
+      />
+      <CheckoutCorrectionModal
+        isOpen={isCorrectionModalOpen}
+        onClose={() => setIsCorrectionModalOpen(false)}
+        lastCheckInAt={profile?.last_check_in_at}
+        onCorrectionComplete={refreshProfile}
       />
 
       <Modal isOpen={isQRModalOpen} onClose={() => { setIsQRModalOpen(false); isProcessingRef.current = false; }} title="Access Check-in">
