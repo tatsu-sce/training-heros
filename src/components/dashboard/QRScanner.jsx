@@ -25,7 +25,11 @@ const QRScanner = ({ onScanSuccess, onScanFailure }) => {
                     d.label.toLowerCase().includes('back') || 
                     d.label.toLowerCase().includes('rear') ||
                     d.label.toLowerCase().includes('environment') ||
-                    d.label.toLowerCase().includes('out')
+                    d.label.toLowerCase().includes('out') ||
+                    d.label.includes('背面') ||
+                    d.label.includes('リア') ||
+                    d.label.includes('バック') ||
+                    d.label.includes('外側')
                 );
                 const defaultId = backCamera ? backCamera.id : devices[0].id;
                 setSelectedCameraId(defaultId);
