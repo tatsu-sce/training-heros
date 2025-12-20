@@ -16,13 +16,13 @@ const OccupancyChart = () => {
         return timeSlots.map(time => {
             const hour = parseInt(time.split(':')[0]);
             // Simulate peak hours around 12:00 and 17:00
-            let base = 20;
-            if (hour >= 11 && hour <= 13) base += 30; // Lunch peak
-            if (hour >= 17) base += 40; // Evening peak
+            let base = 1;
+            if (hour >= 11 && hour <= 13) base += 2; // Lunch peak
+            if (hour >= 17) base += 2; // Evening peak
             
             // Random noise
-            const noise = Math.floor(Math.random() * 20) - 10;
-            return Math.max(0, base + noise);
+            const noise = Math.floor(Math.random() * 3) - 1;
+            return Math.max(0, Math.min(5, base + noise));
         });
     };
 
@@ -65,7 +65,8 @@ const OccupancyChart = () => {
 
     // Determine Y-axis Max for scaling (ignore nulls)
     const validActuals = actualData.filter(d => d !== null);
-    const maxValue = Math.max(...predictedData, ...validActuals) + 10;
+    // Ensure max is at least 5 for scale
+    const maxValue = Math.max(5, ...predictedData, ...validActuals) + 1;
 
     // Find current index to highlight
     const currentIndex = React.useMemo(() => {
@@ -101,7 +102,11 @@ const OccupancyChart = () => {
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.7rem', color: 'var(--color-text-dim)' }}>
                         <div style={{ width: '12px', height: '12px', background: 'var(--color-primary)', borderRadius: '2px' }} /> 
-                        実績 (Active Users)
+                        実績
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.7rem', color: 'var(--color-text-dim)' }}>
+                        <div style={{ width: '12px', height: '12px', background: '#ec4899', borderRadius: '2px', boxShadow: '0 0 5px #ec4899' }} /> 
+                        現在 (Live)
                     </div>
                 </div>
             </div>
@@ -149,6 +154,7 @@ const OccupancyChart = () => {
                                 const predH = (predictedData[i] / maxValue) * 100;
                                 const actH = (actualData[i] / maxValue) * 100;
                                 const isCurrent = i === currentIndex;
+                                const barColor = isCurrent ? '#ec4899' : 'var(--color-primary)'; // Pink for Live
 
                                 return (
                                     <div key={time} style={{ 
@@ -170,22 +176,22 @@ const OccupancyChart = () => {
                                             alignItems: 'flex-end',
                                             justifyContent: 'center'
                                         }}>
-                                            {/* Predicted Bar (Background) */}
-                                            <div 
-                                                title={`予測: ${predictedData[i]}人`}
-                                                style={{
-                                                    position: 'absolute',
-                                                    bottom: 0,
-                                                    width: '100%',
-                                                    height: `${predH}%`,
-                                                    background: 'rgba(255,255,255,0.1)',
-                                                    border: '1px dashed rgba(255,255,255,0.3)',
-                                                    borderRadius: '2px 2px 0 0',
-                                                    transition: 'height 0.4s ease'
-                                                }}
-                                            />
-                                            {/* Actual Bar (Foreground) */}
-                                            {actualData[i] !== null && (
+                                            {/* Predicted Bar (Background) - Hide if current */}
+                                            {!isCurrent && (
+                                                <div 
+                                                    title={`予測: ${predictedData[i]}人`}
+                                                    style={{
+                                                        position: 'absolute',
+                                                        bottom: 0,
+                                                        width: '100%',
+                                                        height: `${predH}%`,
+                                                        background: 'rgba(255,255,255,0.1)',
+                                                        border: '1px dashed rgba(255,255,255,0.3)',
+                                                        borderRadius: '2px 2px 0 0',
+                                                        transition: 'height 0.4s ease'
+                                                    }}
+                                                />
+                                            )}                                  {actualData[i] !== null && (
                                                 <div 
                                                     title={`実績: ${actualData[i]}人`}
                                                     style={{
@@ -193,11 +199,11 @@ const OccupancyChart = () => {
                                                         bottom: 0,
                                                         width: '70%',
                                                         height: `${actH}%`,
-                                                        background: isCurrent ? 'var(--color-primary-light)' : 'var(--color-primary)',
+                                                        background: barColor,
                                                         borderRadius: '2px 2px 0 0',
                                                         opacity: 0.9,
                                                         boxShadow: isCurrent 
-                                                            ? '0 0 15px var(--color-primary), 0 0 5px white' // Glow effect
+                                                            ? `0 0 15px ${barColor}, 0 0 5px white` // Glow effect
                                                             : '0 0 8px rgba(99, 102, 241, 0.3)',
                                                         transition: 'height 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)',
                                                         zIndex: isCurrent ? 2 : 1
