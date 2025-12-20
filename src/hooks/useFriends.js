@@ -53,22 +53,9 @@ export const useFriends = () => {
             // Let's verify if 'is_present' is on profile. If not, we might need to join with real-time occupancy.
             // For this implementation, I will just return profiles. The Dashboard can mock presence or we add a quick check.
 
-            // Let's add a quick mock "is_present" check or check the occupancy table for them.
-            const { data: activeUsers } = await supabase
-                .from('occupancy_logs')
-                .select('user_id')
-                .eq('action', 'check_in')
-                .in('user_id', friendIds)
-                .gt('created_at', new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString()) // Checked in within last 3 hours
-            // This is a naive check. Real logic would find last log and see if it is check_in.
-            // For simplicity, let's just stick to what we had or minimal improvement.
-
-            const activeUserIds = new Set(activeUsers?.map(u => u.user_id) || []);
-
-            const enrichedFriends = profiles.map(f => ({
-                ...f,
-                is_present: activeUserIds.has(f.id) // Simple logic: have they checked in recently?
-            }));
+            // The `profiles` table already has the correct `is_present` status (maintained by handle_occupancy RPC).
+            // So we can just use the data from the profiles table directly.
+            const enrichedFriends = profiles;
 
             setFriends(enrichedFriends);
         } catch (err) {

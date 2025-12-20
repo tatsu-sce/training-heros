@@ -115,7 +115,7 @@ const Dashboard = () => {
       .sort((a, b) => a - b);
 
     if (todayFreeSlots.length === 0) {
-      setRecommendation("今日の空き時間が登録されていません。スケジュールを更新してみましょう！");
+      setRecommendation("今日は予定が詰まっているようですね。無理せず頑張ってください！");
     } else {
       // Find slots that are still in the future
       const currentHour = now.getHours();
@@ -123,7 +123,9 @@ const Dashboard = () => {
       const currentTimeVal = currentHour * 60 + currentMin;
 
       const futureSlots = todayFreeSlots.filter(period => {
-        const [h, m] = TIME_LABELS[period].split(':').map(Number);
+        // Handle range format "10:00-10:30" by extracting start time
+        const startTime = TIME_LABELS[period].split('-')[0];
+        const [h, m] = startTime.split(':').map(Number);
         return (h * 60 + m) > currentTimeVal;
       });
 
@@ -131,7 +133,8 @@ const Dashboard = () => {
         const nextTime = TIME_LABELS[futureSlots[0]];
         setRecommendation(`今日は ${nextTime} からトレーニングに行ける予定ですね！準備はいいですか？`);
       } else {
-        setRecommendation("今日の予定していたトレーニング時間は終了しました。お疲れ様でした！");
+        // User requested to hide the message if all slots passed (handling 2-a-days)
+        setRecommendation("");
       }
     }
   };
@@ -329,37 +332,39 @@ const Dashboard = () => {
         <LiveStatusCard data={occupancyData} />
 
         {/* Recommendation Message */}
-        <div className="glass-panel" style={{
-          marginTop: '1rem',
-          padding: '1.25rem',
-          background: 'rgba(99, 102, 241, 0.1)',
-          border: '1px solid rgba(99, 102, 241, 0.2)',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '1rem'
-        }}>
-          <div style={{
-            width: '40px',
-            height: '40px',
-            borderRadius: '10px',
-            background: 'var(--color-primary)',
+        {recommendation && (
+          <div className="glass-panel" style={{
+            marginTop: '1rem',
+            padding: '1.25rem',
+            background: 'rgba(99, 102, 241, 0.1)',
+            border: '1px solid rgba(99, 102, 241, 0.2)',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'center',
-            color: 'white',
-            flexShrink: 0
+            gap: '1rem'
           }}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
-            </svg>
+            <div style={{
+              width: '40px',
+              height: '40px',
+              borderRadius: '10px',
+              background: 'var(--color-primary)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: 'white',
+              flexShrink: 0
+            }}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+              </svg>
+            </div>
+            <div>
+              <p style={{ margin: 0, fontSize: '0.85rem', color: 'rgba(255,255,255,0.6)', marginBottom: '0.2rem' }}>Next Session Suggestion</p>
+              <p style={{ margin: 0, fontWeight: '600', color: 'var(--color-primary)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                {recommendation}
+              </p>
+            </div>
           </div>
-          <div>
-            <p style={{ margin: 0, fontSize: '0.85rem', color: 'rgba(255,255,255,0.6)', marginBottom: '0.2rem' }}>Next Session Suggestion</p>
-            <p style={{ margin: 0, fontWeight: '600', color: 'var(--color-primary)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-              {recommendation}
-            </p>
-          </div>
-        </div>
+        )}
 
         <div className="glass-panel" style={{ marginTop: '1rem', padding: '1.5rem' }}>
           <OccupancyChart />
