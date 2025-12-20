@@ -16,9 +16,9 @@ const UsageSummary = () => {
     return (
         <div className="glass-panel" style={{ padding: '1.5rem', marginBottom: '1.5rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                <h3 style={{ fontSize: '1.1rem', color: 'var(--color-text-muted)' }}>Usage Summary</h3>
+                <h3 style={{ fontSize: '1.1rem', color: 'var(--color-text-muted)' }}>サマリー</h3>
                 <div style={{ display: 'flex', background: 'rgba(255,255,255,0.05)', borderRadius: '6px', padding: '2px' }}>
-                    {['week', 'month'].map(p => (
+                    {['day', 'week', 'month'].map(p => (
                         <button
                             key={p}
                             onClick={() => setPeriod(p)}

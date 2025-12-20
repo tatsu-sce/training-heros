@@ -47,7 +47,9 @@ const ActiveFriends = ({ onOpenSocial }) => {
                                         <div style={{ fontSize: '0.9rem', fontWeight: '500' }}>{friend.display_name}</div>
                                         <div style={{ fontSize: '0.75rem', color: 'var(--color-text-dim)' }}>
                                             {friend.is_present
-                                                ? 'Working out now'
+                                                ? (friend.current_location 
+                                                    ? <span style={{ color: 'var(--color-primary-light)' }}>@ {friend.current_location.charAt(0).toUpperCase() + friend.current_location.slice(1)}</span>
+                                                    : 'Working out now')
                                                 : `Last seen ${getTimeAgo(friend.last_check_in_at)}`}
                                         </div>
                                     </div>
