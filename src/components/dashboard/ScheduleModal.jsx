@@ -4,7 +4,7 @@ import ScheduleEditor from './ScheduleEditor';
 
 const ScheduleModal = ({ isOpen, onClose, onScheduleUpdate }) => {
     return (
-        <Modal isOpen={isOpen} onClose={onClose} title="Edit Class Schedule">
+        <Modal isOpen={isOpen} onClose={onClose} title="Edit Gym Availability">
             <ScheduleEditor onScheduleUpdate={onScheduleUpdate} />
         </Modal>
     );
