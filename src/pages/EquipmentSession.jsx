@@ -20,10 +20,23 @@ const EquipmentSession = () => {
 
         console.log("Exit Scan:", decodedText);
 
+        // Check-out Logic
+        let action = '';
+        let campus = 'ookayama'; // Default
+
         if (decodedText === 'gym_check_out') {
+            action = 'check_out';
+            campus = 'ookayama';
+        } else if (decodedText.endsWith('_check_out')) {
+            action = 'check_out';
+            campus = decodedText.replace('_check_out', '');
+        }
+
+        if (action === 'check_out') {
             try {
                 const { data, error } = await supabase.rpc('handle_occupancy', {
-                    action_type: 'check_out'
+                    action_type: 'check_out',
+                    location_name: campus
                 });
 
                 if (error) {
