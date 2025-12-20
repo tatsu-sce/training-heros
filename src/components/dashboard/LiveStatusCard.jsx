@@ -1,11 +1,15 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-const LiveStatusCard = ({ data }) => {
+const LiveStatusCard = ({ data, campus = 'ookayama' }) => {
     const { t } = useTranslation();
-    const { occupancy, maxCapacity, percentage, status, loading } = data;
+    const { counts, maxCapacity, getStatus, loading } = data;
 
     if (loading) return <div className="glass-panel" style={{ height: '200px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Loading status...</div>;
+
+    const occupancy = counts ? (counts[campus] || 0) : 0;
+    const percentage = Math.round((occupancy / (maxCapacity || 120)) * 100);
+    const status = getStatus ? getStatus(occupancy) : 'empty';
 
     let statusColor = '#22d3ee'; // Cyan (Empty)
     let statusText = "ガラガラ";

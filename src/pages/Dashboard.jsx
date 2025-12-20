@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import { useOccupancy } from '../hooks/useOccupancy';
 import { useMuscleStats } from '../hooks/useMuscleStats';
+import { useOccupancyHistory } from '../hooks/useOccupancyHistory';
 import LiveStatusCard from '../components/dashboard/LiveStatusCard';
 import AvatarScene from '../components/3d/AvatarScene';
 import Modal from '../components/ui/Modal';
@@ -12,7 +13,10 @@ import QRScanner from '../components/dashboard/QRScanner';
 import ScheduleModal from '../components/dashboard/ScheduleModal';
 import GoalSelectionModal from '../components/dashboard/GoalSelectionModal';
 import InquiryModal from '../components/dashboard/InquiryModal';
+import CampusSelector from '../components/dashboard/CampusSelector'; // Add import
 import OccupancyChart from '../components/dashboard/OccupancyChart';
+
+
 import SocialModal from '../components/dashboard/SocialModal';
 import ProfileModal from '../components/dashboard/ProfileModal';
 import UsageSummaryModal from '../components/dashboard/UsageSummaryModal';
@@ -29,7 +33,10 @@ const Dashboard = () => {
   const occupancyData = useOccupancy();
   const { stats: muscleStats, bodyStats, profile, trainMuscle, refreshProfile } = useMuscleStats();
 
-  const [isQRModalOpen, setIsQRModalOpen] = useState(false);
+
+   const [isQRModalOpen, setIsQRModalOpen] = useState(false);
+  const [selectedCampus, setSelectedCampus] = useState('shibuya');
+  const { historyData } = useOccupancyHistory(selectedCampus, occupancyData.counts ? (occupancyData.counts[selectedCampus] || 0) : 0);
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
   const [isInquiryModalOpen, setIsInquiryModalOpen] = useState(false);
   const [isSocialModalOpen, setIsSocialModalOpen] = useState(false);
@@ -95,23 +102,47 @@ const Dashboard = () => {
     const now = new Date();
     const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     const currentDay = dayNames[now.getDay()];
-    // Simple period mapping: 1限 starts 9:00, periods are 90mins + 15mins break.
-    // Logic: Find next free period today
-    if (currentDay === 'Sun' || currentDay === 'Sat') {
-      setRecommendation("It's the weekend! Great time for a full workout.");
+
+    // Time mapping
+    const TIME_LABELS = {
+      1: '10:00-10:30', 2: '10:30-11:00', 3: '11:00-11:30', 4: '11:30-12:00',
+      5: '12:00-12:30', 6: '12:30-13:00', 7: '13:00-13:30', 8: '13:30-14:00',
+      9: '14:00-14:30', 10: '14:30-15:00', 11: '15:00-15:30', 12: '15:30-16:00',
+      13: '16:00-16:30', 14: '16:30-17:00', 15: '17:00-17:30', 16: '17:30-18:00'
+    };
+
+    if (currentDay === 'Sun') {
+      setRecommendation("今日はトレセンがお休みです。自宅でストレッチしましょう！");
       return;
     }
 
-    // Find busy periods for today
-    const busyPeriods = schedule.filter(s => s.day_of_week === currentDay).map(s => s.period);
+    const todayFreeSlots = schedule
+      .filter(s => s.day_of_week === currentDay.substring(0, 3) && s.is_occupied)
+      .map(s => s.period)
+      .sort((a, b) => a - b);
 
-    // Suggest first free period out of 1-6 (most common)
-    const freePeriods = [1, 2, 3, 4, 5, 6].filter(p => !busyPeriods.includes(p));
-
-    if (freePeriods.length > 0) {
-      setRecommendation(`You have free time at Period ${freePeriods.join(', ')} today!`);
+    if (todayFreeSlots.length === 0) {
+      setRecommendation("今日は予定が詰まっているようですね。無理せず頑張ってください！");
     } else {
-      setRecommendation("Busy day today! Maybe a quick session in the evening?");
+      // Find slots that are still in the future
+      const currentHour = now.getHours();
+      const currentMin = now.getMinutes();
+      const currentTimeVal = currentHour * 60 + currentMin;
+
+      const futureSlots = todayFreeSlots.filter(period => {
+        // Handle range format "10:00-10:30" by extracting start time
+        const startTime = TIME_LABELS[period].split('-')[0];
+        const [h, m] = startTime.split(':').map(Number);
+        return (h * 60 + m) > currentTimeVal;
+      });
+
+      if (futureSlots.length > 0) {
+        const nextTime = TIME_LABELS[futureSlots[0]];
+        setRecommendation(`今日は ${nextTime} からトレーニングに行ける予定ですね！準備はいいですか？`);
+      } else {
+        // User requested to hide the message if all slots passed (handling 2-a-days)
+        setRecommendation("");
+      }
     }
   };
 
@@ -124,36 +155,43 @@ const Dashboard = () => {
     isProcessingRef.current = true;
     console.log(`Scan result: ${decodedText}`);
 
-    // Check-in Logic (Dashboard only accepts check-in)
+    // Check-in/out Logic
+    let action = '';
+    let campus = 'ookayama'; // Default
+
     if (decodedText === 'gym_check_in') {
-      try {
-        const { data, error } = await supabase.rpc('handle_occupancy', {
-          action_type: 'check_in'
-        });
-
-        if (error) throw error;
-
-        navigate('/workout');
-        refreshProfile();
-      } catch (err) {
-        console.error('Error handling QR code:', err);
-        alert(`Failed: ${err.message || 'Unknown error'}`);
-      }
+        action = 'check_in';
+        campus = 'ookayama';
     } else if (decodedText === 'gym_check_out') {
+        action = 'check_out';
+        campus = 'ookayama';
+    } else if (decodedText.endsWith('_check_in')) {
+        action = 'check_in';
+        campus = decodedText.replace('_check_in', '');
+    } else if (decodedText.endsWith('_check_out')) {
+        action = 'check_out';
+        campus = decodedText.replace('_check_out', '');
+    }
+
+    if (action) {
       try {
         const { data, error } = await supabase.rpc('handle_occupancy', {
-          action_type: 'check_out'
+          action_type: action,
+          location_name: campus
         });
 
         if (error) throw error;
 
-        if (data?.duration_seconds !== undefined) {
-          const unit = data.duration_seconds < 60 ? 'seconds' : 'minutes';
-          const value = data.duration_seconds < 60 ? data.duration_seconds : data.duration_minutes;
-          alert(`Check-out confirmed! You stayed for ${value} ${unit}.`);
+        if (action === 'check_in') {
+            navigate('/workout');
+        } else {
+            if (data?.duration_seconds !== undefined) {
+                const unit = data.duration_seconds < 60 ? 'seconds' : 'minutes';
+                const value = data.duration_seconds < 60 ? data.duration_seconds : data.duration_minutes;
+                alert(`Check-out confirmed! You stayed for ${value} ${unit}.`);
+            }
+            navigate('/');
         }
-
-        navigate('/');
         refreshProfile();
       } catch (err) {
         console.error('Error handling QR code:', err);
@@ -305,9 +343,54 @@ const Dashboard = () => {
 
       {/* 1. Status & Chart (Top) */}
       <div style={{ marginBottom: '2rem' }}>
-        <LiveStatusCard data={occupancyData} />
+        <div style={{ marginBottom: '1rem' }}>
+             <CampusSelector selectedCampus={selectedCampus} onSelect={setSelectedCampus} />
+        </div>
+        <LiveStatusCard data={occupancyData} campus={selectedCampus} />
+
+        {/* Recommendation Message */}
+        {recommendation && (
+          <div className="glass-panel" style={{
+            marginTop: '1rem',
+            padding: '1.25rem',
+            background: 'rgba(99, 102, 241, 0.1)',
+            border: '1px solid rgba(99, 102, 241, 0.2)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '1rem'
+          }}>
+            <div style={{
+              width: '40px',
+              height: '40px',
+              borderRadius: '10px',
+              background: 'var(--color-primary)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: 'white',
+              flexShrink: 0
+            }}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+              </svg>
+            </div>
+            <div>
+              <p style={{ margin: 0, fontSize: '0.85rem', color: 'rgba(255,255,255,0.6)', marginBottom: '0.2rem' }}>Next Session Suggestion</p>
+              <p style={{ margin: 0, fontWeight: '600', color: 'var(--color-primary)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                {recommendation}
+              </p>
+            </div>
+          </div>
+        )}
+
+
+
         <div className="glass-panel" style={{ marginTop: '1rem', padding: '1.5rem' }}>
-          <OccupancyChart />
+          <OccupancyChart 
+              campusId={selectedCampus} 
+              currentOccupancy={occupancyData.counts ? (occupancyData.counts[selectedCampus] || 0) : 0} 
+              historyData={historyData}
+          />
         </div>
       </div>
 

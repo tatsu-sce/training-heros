@@ -1,6 +1,19 @@
 import React from 'react';
 import { useFriends } from '../../hooks/useFriends';
 
+const getTimeAgo = (dateString) => {
+    if (!dateString) return 'Last seen recently';
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInSeconds = Math.floor((now - date) / 1000);
+
+    if (diffInSeconds < 60) return 'Just now';
+    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} mins ago`;
+    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hours ago`;
+    if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)} days ago`;
+    return date.toLocaleDateString();
+};
+
 const ActiveFriends = ({ onOpenSocial }) => {
     const { friends, loading } = useFriends();
 
@@ -33,7 +46,9 @@ const ActiveFriends = ({ onOpenSocial }) => {
                                     <div>
                                         <div style={{ fontSize: '0.9rem', fontWeight: '500' }}>{friend.display_name}</div>
                                         <div style={{ fontSize: '0.75rem', color: 'var(--color-text-dim)' }}>
-                                            {friend.is_present ? 'Working out now' : 'Last seen recently'}
+                                            {friend.is_present
+                                                ? 'Working out now'
+                                                : `Last seen ${getTimeAgo(friend.last_check_in_at)}`}
                                         </div>
                                     </div>
                                 </div>

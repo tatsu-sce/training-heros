@@ -2,22 +2,36 @@ import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
 
 export const useOccupancy = () => {
-    const [occupancy, setOccupancy] = useState(0);
-    const [maxCapacity] = useState(120); // Capacity
+    const [counts, setCounts] = useState({ total: 0, ookayama: 0, suzukakedai: 0 });
+    const [maxCapacity] = useState(120);
     const [loading, setLoading] = useState(true);
 
     const fetchOccupancy = async () => {
         try {
             const threshold = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString();
 
-            const { count, error } = await supabase
+            const { data, error } = await supabase
                 .from('profiles')
-                .select('*', { count: 'exact', head: true })
+                .select('main_campus')
                 .eq('is_present', true)
                 .gt('last_check_in_at', threshold);
 
             if (error) throw error;
-            setOccupancy(count || 0);
+
+            const newCounts = { total: 0, ookayama: 0, suzukakedai: 0 };
+            if (data) {
+                newCounts.total = data.length;
+                data.forEach(p => {
+                    const campus = p.main_campus || 'ookayama'; // Default to ookayama if null
+                    if (newCounts[campus] !== undefined) {
+                        newCounts[campus]++;
+                    } else {
+                        // Handle unexpected campus IDs
+                        newCounts[campus] = (newCounts[campus] || 0) + 1;
+                    }
+                });
+            }
+            setCounts(newCounts);
         } catch (err) {
             console.error('Error fetching occupancy:', err);
         } finally {
@@ -28,20 +42,15 @@ export const useOccupancy = () => {
     useEffect(() => {
         fetchOccupancy();
 
-        // Realtime subscription for updates
         const channel = supabase
             .channel('public:profiles:occupancy')
             .on('postgres_changes',
                 { event: 'UPDATE', schema: 'public', table: 'profiles' },
-                () => {
-                    fetchOccupancy();
-                }
+                () => fetchOccupancy()
             )
             .subscribe();
 
-        // Periodic refresh every 5 minutes to handle stale sessions 
-        // that haven't triggered a DB update
-        const interval = setInterval(fetchOccupancy, 5 * 60 * 1000);
+        const interval = setInterval(fetchOccupancy, 60 * 1000); // 1 min refresh
 
         return () => {
             supabase.removeChannel(channel);
@@ -49,14 +58,14 @@ export const useOccupancy = () => {
         };
     }, []);
 
-    const percentage = Math.round((occupancy / maxCapacity) * 100);
+    // Helper to get status for specific count
+    const getStatus = (count) => {
+        if (count == 0) return 'empty'; // Fixed: use == 0
+        if (count === 1) return 'quiet';
+        if (count >= 2 && count <= 3) return 'moderate';
+        if (count === 4) return 'busy';
+        return 'crowded';
+    };
 
-    // 5-level status based on absolute user counts
-    let status = 'empty';
-    if (occupancy === 1) status = 'quiet';
-    else if (occupancy >= 2 && occupancy <= 3) status = 'moderate';
-    else if (occupancy === 4) status = 'busy';
-    else if (occupancy >= 5) status = 'crowded';
-
-    return { occupancy, maxCapacity, percentage, status, loading };
+    return { counts, maxCapacity, getStatus, loading };
 };

@@ -88,6 +88,93 @@ const OccupancyChart = () => {
         });
     }, [timeSlots]);
 
+    // Helper: Generate random data for one day (array of values matching timeSlots)
+    const generateDayData = () => {
+        // Campus Variations
+        const campusBias = {
+            'shibuya': 0, // Standard
+            'shinjuku': -1, // Slightly less busy
+            'osaka': 2 // Busier (demo)
+        };
+        const bias = campusBias[campusId] || 0;
+
+        return timeSlots.map(time => {
+            const hour = parseInt(time.split(':')[0]);
+            // Simulate peak hours around 12:00 and 17:00
+            let base = 1 + bias;
+            if (hour >= 11 && hour <= 13) base += 2; // Lunch peak
+            if (hour >= 17) base += 2; // Evening peak
+            
+            // Random noise (seeded by time + campus roughly)
+            const noise = Math.floor(Math.random() * 3) - 1;
+            return Math.max(0, Math.min(8, base + noise)); // Cap at 8 for variety
+        });
+    };
+
+    // 1. Generate Past 30 Days Data
+    const pastMonthData = React.useMemo(() => {
+        return Array.from({ length: 30 }, () => generateDayData());
+    }, [timeSlots, campusId]);
+
+    // 2. Calculate Predicted (Average of past 30 days per slot)
+    const predictedData = React.useMemo(() => {
+        const sums = new Array(timeSlots.length).fill(0);
+        pastMonthData.forEach(dayDat => {
+            dayDat.forEach((val, idx) => {
+                sums[idx] += val;
+            });
+        });
+        return sums.map(sum => Math.round(sum / 30));
+    }, [pastMonthData, timeSlots]);
+
+    // 3. Generate "Actual" Data (Today)
+    const actualData = React.useMemo(() => {
+        // If historyData is provided, use it
+        if (historyData && historyData.length === timeSlots.length) {
+            return historyData.map((val, i) => {
+                // If it's the current slot, calculate Max(history, live)
+                if (i === currentIndex && currentOccupancy !== undefined && val !== null) {
+                    return Math.max(val, currentOccupancy);
+                }
+                // If live is valid but history is null (e.g. slight timing diff), use live?
+                // But history return null for FUTURE. Current slot should have value (0 or more) from hook.
+                if (i === currentIndex && val === null && currentOccupancy !== undefined) {
+                    return currentOccupancy; 
+                }
+                return val;
+            });
+        }
+
+        // Fallback to random/dummy if no history
+        const fullDayData = generateDayData();
+        const now = new Date();
+        const currentHour = now.getHours();
+        const currentMin = now.getMinutes();
+
+        return fullDayData.map((val, i) => {
+            // Override with real-time data if this is the current slot
+            if (i === currentIndex && currentOccupancy !== undefined) {
+                return currentOccupancy;
+            }
+
+            const timeStr = timeSlots[i];
+            const [hStr, mStr] = timeStr.split(':');
+            const slotHour = parseInt(hStr, 10);
+            const slotMin = parseInt(mStr, 10);
+
+            // If slot is in the future, return null
+            if (slotHour > currentHour || (slotHour === currentHour && slotMin > currentMin)) {
+                return null;
+            }
+            return val;
+        });
+    }, [timeSlots, currentIndex, currentOccupancy, campusId, historyData]); // Added dependencies
+
+    // Determine Y-axis Max for scaling (ignore nulls)
+    const validActuals = actualData.filter(d => d !== null);
+    // Ensure max is at least 5 for scale
+    const maxValue = Math.max(5, ...predictedData, ...validActuals) + 1;
+
     return (
         <div className="glass-panel" style={{ marginTop: '2rem', padding: '1.5rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
@@ -101,7 +188,11 @@ const OccupancyChart = () => {
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.7rem', color: 'var(--color-text-dim)' }}>
                         <div style={{ width: '12px', height: '12px', background: 'var(--color-primary)', borderRadius: '2px' }} /> 
-                        実績 (Active Users)
+                        実績
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.7rem', color: 'var(--color-text-dim)' }}>
+                        <div style={{ width: '12px', height: '12px', background: '#ec4899', borderRadius: '2px', boxShadow: '0 0 5px #ec4899' }} /> 
+                        現在 (Live)
                     </div>
                 </div>
             </div>
@@ -149,6 +240,7 @@ const OccupancyChart = () => {
                                 const predH = (predictedData[i] / maxValue) * 100;
                                 const actH = (actualData[i] / maxValue) * 100;
                                 const isCurrent = i === currentIndex;
+                                const barColor = isCurrent ? '#ec4899' : 'var(--color-primary)'; // Pink for Live
 
                                 return (
                                     <div key={time} style={{ 
@@ -170,22 +262,22 @@ const OccupancyChart = () => {
                                             alignItems: 'flex-end',
                                             justifyContent: 'center'
                                         }}>
-                                            {/* Predicted Bar (Background) */}
-                                            <div 
-                                                title={`予測: ${predictedData[i]}人`}
-                                                style={{
-                                                    position: 'absolute',
-                                                    bottom: 0,
-                                                    width: '100%',
-                                                    height: `${predH}%`,
-                                                    background: 'rgba(255,255,255,0.1)',
-                                                    border: '1px dashed rgba(255,255,255,0.3)',
-                                                    borderRadius: '2px 2px 0 0',
-                                                    transition: 'height 0.4s ease'
-                                                }}
-                                            />
-                                            {/* Actual Bar (Foreground) */}
-                                            {actualData[i] !== null && (
+                                            {/* Predicted Bar (Background) - Show only for future (where actualData is null) */}
+                                            {actualData[i] === null && (
+                                                <div 
+                                                    title={`予測: ${predictedData[i]}人`}
+                                                    style={{
+                                                        position: 'absolute',
+                                                        bottom: 0,
+                                                        width: '100%',
+                                                        height: `${predH}%`,
+                                                        background: 'rgba(255,255,255,0.1)',
+                                                        border: '1px dashed rgba(255,255,255,0.3)',
+                                                        borderRadius: '2px 2px 0 0',
+                                                        transition: 'height 0.4s ease'
+                                                    }}
+                                                />
+                                            )}                                  {actualData[i] !== null && (
                                                 <div 
                                                     title={`実績: ${actualData[i]}人`}
                                                     style={{
