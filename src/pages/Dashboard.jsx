@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import { useOccupancy } from '../hooks/useOccupancy';
 import { useMuscleStats } from '../hooks/useMuscleStats';
+import { useOccupancyHistory } from '../hooks/useOccupancyHistory';
 import LiveStatusCard from '../components/dashboard/LiveStatusCard';
 import AvatarScene from '../components/3d/AvatarScene';
 import Modal from '../components/ui/Modal';
@@ -12,7 +13,10 @@ import QRScanner from '../components/dashboard/QRScanner';
 import ScheduleModal from '../components/dashboard/ScheduleModal';
 import GoalSelectionModal from '../components/dashboard/GoalSelectionModal';
 import InquiryModal from '../components/dashboard/InquiryModal';
+import CampusSelector from '../components/dashboard/CampusSelector'; // Add import
 import OccupancyChart from '../components/dashboard/OccupancyChart';
+
+
 import SocialModal from '../components/dashboard/SocialModal';
 import ProfileModal from '../components/dashboard/ProfileModal';
 import UsageSummaryModal from '../components/dashboard/UsageSummaryModal';
@@ -29,7 +33,10 @@ const Dashboard = () => {
   const occupancyData = useOccupancy();
   const { stats: muscleStats, bodyStats, profile, trainMuscle, refreshProfile } = useMuscleStats();
 
-  const [isQRModalOpen, setIsQRModalOpen] = useState(false);
+
+   const [isQRModalOpen, setIsQRModalOpen] = useState(false);
+  const [selectedCampus, setSelectedCampus] = useState('shibuya');
+  const { historyData } = useOccupancyHistory(selectedCampus, occupancyData.counts ? (occupancyData.counts[selectedCampus] || 0) : 0);
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
   const [isInquiryModalOpen, setIsInquiryModalOpen] = useState(false);
   const [isSocialModalOpen, setIsSocialModalOpen] = useState(false);
@@ -145,36 +152,49 @@ const Dashboard = () => {
     isProcessingRef.current = true;
     console.log(`Scan result: ${decodedText}`);
 
-    // Check-in Logic (Dashboard only accepts check-in)
-    if (decodedText === 'gym_check_in') {
-      try {
-        const { data, error } = await supabase.rpc('handle_occupancy', {
-          action_type: 'check_in'
-        });
+    // Check-in/out Logic
+    let action = '';
+    let campus = selectedCampus;
 
-        if (error) throw error;
-
-        navigate('/workout');
-        refreshProfile();
-      } catch (err) {
-        console.error('Error handling QR code:', err);
-        alert(`Failed: ${err.message || 'Unknown error'}`);
-      }
-    } else if (decodedText === 'gym_check_out') {
-      try {
-        const { data, error } = await supabase.rpc('handle_occupancy', {
-          action_type: 'check_out'
-        });
-
-        if (error) throw error;
-
-        if (data?.duration_seconds !== undefined) {
-          const unit = data.duration_seconds < 60 ? 'seconds' : 'minutes';
-          const value = data.duration_seconds < 60 ? data.duration_seconds : data.duration_minutes;
-          alert(`Check-out confirmed! You stayed for ${value} ${unit}.`);
+    if (decodedText.endsWith('_check_in')) {
+        action = 'check_in';
+        const prefix = decodedText.replace('_check_in', '');
+        if (['ookayama', 'suzukakedai'].includes(prefix)) {
+            campus = prefix;
+            setSelectedCampus(prefix); // Switch view to that campus
         }
+    } else if (decodedText.endsWith('_check_out')) {
+        action = 'check_out';
+        const prefix = decodedText.replace('_check_out', '');
+        if (['ookayama', 'suzukakedai'].includes(prefix)) {
+            campus = prefix;
+            setSelectedCampus(prefix);
+        }
+    } else if (decodedText === 'gym_check_in') {
+        action = 'check_in';
+    } else if (decodedText === 'gym_check_out') {
+        action = 'check_out';
+    }
 
-        navigate('/');
+    if (action) {
+      try {
+        const { data, error } = await supabase.rpc('handle_occupancy', {
+          action_type: action,
+          location_name: campus
+        });
+
+        if (error) throw error;
+
+        if (action === 'check_in') {
+            navigate('/workout');
+        } else {
+            if (data?.duration_seconds !== undefined) {
+                const unit = data.duration_seconds < 60 ? 'seconds' : 'minutes';
+                const value = data.duration_seconds < 60 ? data.duration_seconds : data.duration_minutes;
+                alert(`Check-out confirmed! You stayed for ${value} ${unit}.`);
+            }
+            navigate('/');
+        }
         refreshProfile();
       } catch (err) {
         console.error('Error handling QR code:', err);
@@ -326,7 +346,10 @@ const Dashboard = () => {
 
       {/* 1. Status & Chart (Top) */}
       <div style={{ marginBottom: '2rem' }}>
-        <LiveStatusCard data={occupancyData} />
+        <div style={{ marginBottom: '1rem' }}>
+             <CampusSelector selectedCampus={selectedCampus} onSelect={setSelectedCampus} />
+        </div>
+        <LiveStatusCard data={occupancyData} campus={selectedCampus} />
 
         {/* Recommendation Message */}
         <div className="glass-panel" style={{
@@ -361,8 +384,14 @@ const Dashboard = () => {
           </div>
         </div>
 
+
+
         <div className="glass-panel" style={{ marginTop: '1rem', padding: '1.5rem' }}>
-          <OccupancyChart />
+          <OccupancyChart 
+              campusId={selectedCampus} 
+              currentOccupancy={occupancyData.counts ? (occupancyData.counts[selectedCampus] || 0) : 0} 
+              historyData={historyData}
+          />
         </div>
       </div>
 
