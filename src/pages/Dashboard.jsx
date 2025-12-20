@@ -157,26 +157,20 @@ const Dashboard = () => {
 
     // Check-in/out Logic
     let action = '';
-    let campus = selectedCampus;
+    let campus = 'ookayama'; // Default
 
-    if (decodedText.endsWith('_check_in')) {
+    if (decodedText === 'gym_check_in') {
         action = 'check_in';
-        const prefix = decodedText.replace('_check_in', '');
-        if (['ookayama', 'suzukakedai'].includes(prefix)) {
-            campus = prefix;
-            setSelectedCampus(prefix); // Switch view to that campus
-        }
-    } else if (decodedText.endsWith('_check_out')) {
-        action = 'check_out';
-        const prefix = decodedText.replace('_check_out', '');
-        if (['ookayama', 'suzukakedai'].includes(prefix)) {
-            campus = prefix;
-            setSelectedCampus(prefix);
-        }
-    } else if (decodedText === 'gym_check_in') {
-        action = 'check_in';
+        campus = 'ookayama';
     } else if (decodedText === 'gym_check_out') {
         action = 'check_out';
+        campus = 'ookayama';
+    } else if (decodedText.endsWith('_check_in')) {
+        action = 'check_in';
+        campus = decodedText.replace('_check_in', '');
+    } else if (decodedText.endsWith('_check_out')) {
+        action = 'check_out';
+        campus = decodedText.replace('_check_out', '');
     }
 
     if (action) {
