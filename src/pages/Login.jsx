@@ -49,7 +49,7 @@ const Login = () => {
           email,
           password,
           options: {
-            emailRedirectTo: window.location.origin,
+            emailRedirectTo: `${window.location.origin}/login`,
             data: {
               student_id: studentId
             }
