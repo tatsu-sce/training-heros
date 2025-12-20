@@ -13,6 +13,7 @@ const Onboarding = () => {
 
     // Form States
     const [nickname, setNickname] = useState('');
+    const [mainCampus, setMainCampus] = useState('ookayama'); // Default
     const [fitnessGoal, setFitnessGoal] = useState('General Fitness');
     const [height, setHeight] = useState('');
     const [weight, setWeight] = useState('');
@@ -35,6 +36,7 @@ const Onboarding = () => {
             const updates = {
                 id: user.id,
                 display_name: nickname,
+                main_campus: mainCampus, // Save main campus
                 fitness_goal: fitnessGoal,
                 height: h,
                 weight: w,
@@ -59,7 +61,7 @@ const Onboarding = () => {
         }
     };
 
-    const isStep3Valid = height && weight && !isNaN(height) && !isNaN(weight);
+    const isStepStatsValid = height && weight && !isNaN(height) && !isNaN(weight);
 
     return (
         <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--color-bg-deep)', padding: '1rem' }}>
@@ -69,7 +71,7 @@ const Onboarding = () => {
 
                 {/* Step Indicators */}
                 <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '2rem', justifyContent: 'center' }}>
-                    {[1, 2, 3, 4].map(i => (
+                    {[1, 2, 3, 4, 5].map(i => (
                         <div key={i} style={{
                             width: '30px', height: '4px', borderRadius: '2px',
                             background: step >= i ? 'var(--color-primary)' : 'rgba(255,255,255,0.1)'
@@ -105,8 +107,48 @@ const Onboarding = () => {
                     </div>
                 )}
 
-                {/* Step 2: Goal */}
+                {/* Step 2: Main Campus */}
                 {step === 2 && (
+                    <div className="fade-in">
+                        <div style={{ marginBottom: '1.5rem' }}>
+                            <span style={{ color: 'var(--color-text-dim)', fontSize: '0.9rem', display: 'block', marginBottom: '0.5rem' }}>Select your Main Campus</span>
+                            <div style={{ display: 'grid', gap: '0.8rem' }}>
+                                {[
+                                    { id: 'ookayama', label: 'Ookayama (大岡山)' },
+                                    { id: 'suzukakedai', label: 'Suzukakedai (すずかけ台)' }
+                                ].map(campus => (
+                                    <button
+                                        key={campus.id}
+                                        onClick={() => setMainCampus(campus.id)}
+                                        style={{
+                                            padding: '1.2rem',
+                                            textAlign: 'left',
+                                            background: mainCampus === campus.id ? 'rgba(99, 102, 241, 0.2)' : 'rgba(0,0,0,0.2)',
+                                            border: mainCampus === campus.id ? '1px solid var(--color-primary)' : '1px solid rgba(255,255,255,0.1)',
+                                            borderRadius: '12px',
+                                            color: mainCampus === campus.id ? 'white' : 'var(--color-text-muted)',
+                                            cursor: 'pointer',
+                                            transition: 'all 0.2s',
+                                            display: 'flex',
+                                            justifyContent: 'space-between',
+                                            alignItems: 'center'
+                                        }}
+                                    >
+                                        <span style={{ fontWeight: '600', fontSize: '1rem' }}>{campus.label}</span>
+                                        {mainCampus === campus.id && <span style={{ color: 'var(--color-primary)' }}>● Selected</span>}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                        <div style={{ display: 'flex', gap: '1rem' }}>
+                            <button className="btn-secondary" style={{ flex: 1 }} onClick={() => setStep(1)}>Back</button>
+                            <button className="btn-primary" style={{ flex: 1 }} onClick={() => setStep(3)}>Next</button>
+                        </div>
+                    </div>
+                )}
+
+                {/* Step 3: Goal */}
+                {step === 3 && (
                     <div className="fade-in">
                         <div style={{ marginBottom: '1.5rem' }}>
                             <span style={{ color: 'var(--color-text-dim)', fontSize: '0.9rem', display: 'block', marginBottom: '0.5rem' }}>What is your main goal?</span>
@@ -132,14 +174,14 @@ const Onboarding = () => {
                             </div>
                         </div>
                         <div style={{ display: 'flex', gap: '1rem' }}>
-                            <button className="btn-secondary" style={{ flex: 1 }} onClick={() => setStep(1)}>Back</button>
-                            <button className="btn-primary" style={{ flex: 1 }} onClick={() => setStep(3)}>Next</button>
+                            <button className="btn-secondary" style={{ flex: 1 }} onClick={() => setStep(2)}>Back</button>
+                            <button className="btn-primary" style={{ flex: 1 }} onClick={() => setStep(4)}>Next</button>
                         </div>
                     </div>
                 )}
 
-                {/* Step 3: Height & Weight */}
-                {step === 3 && (
+                {/* Step 4: Height & Weight */}
+                {step === 4 && (
                     <div className="fade-in">
                         <div style={{ marginBottom: '1.5rem' }}>
                             <h3 style={{ fontSize: '1.1rem', marginBottom: '1rem' }}>Body Stats</h3>
@@ -178,12 +220,12 @@ const Onboarding = () => {
                             </label>
                         </div>
                         <div style={{ display: 'flex', gap: '1rem' }}>
-                            <button className="btn-secondary" style={{ flex: 1 }} onClick={() => setStep(2)}>Back</button>
+                            <button className="btn-secondary" style={{ flex: 1 }} onClick={() => setStep(3)}>Back</button>
                             <button
                                 className="btn-primary"
                                 style={{ flex: 1 }}
-                                onClick={() => setStep(4)}
-                                disabled={!isStep3Valid}
+                                onClick={() => setStep(5)}
+                                disabled={!isStepStatsValid}
                             >
                                 Next
                             </button>
@@ -191,8 +233,8 @@ const Onboarding = () => {
                     </div>
                 )}
 
-                {/* Step 4: Class Schedule */}
-                {step === 4 && (
+                {/* Step 5: Class Schedule */}
+                {step === 5 && (
                     <div className="fade-in">
                         <div style={{ marginBottom: '1.5rem' }}>
                             <span style={{ color: 'var(--color-text-dim)', fontSize: '0.9rem', display: 'block', marginBottom: '0.5rem' }}>Set your Class Schedule (Tap Busy Slots)</span>
@@ -201,7 +243,7 @@ const Onboarding = () => {
                             </div>
                         </div>
                         <div style={{ display: 'flex', gap: '1rem' }}>
-                            <button className="btn-secondary" style={{ flex: 1 }} onClick={() => setStep(3)}>Back</button>
+                            <button className="btn-secondary" style={{ flex: 1 }} onClick={() => setStep(4)}>Back</button>
                             <button
                                 className="btn-primary"
                                 style={{ flex: 1 }}

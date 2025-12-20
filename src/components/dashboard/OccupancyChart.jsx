@@ -1,35 +1,70 @@
 import React from 'react';
 
-const OccupancyChart = () => {
-    // Generated Time Slots: 10:00 to 18:00 (30 min intervals)
-    const timeSlots = React.useMemo(() => {
-        const slots = [];
-        for (let h = 10; h <= 18; h++) {
-            slots.push(`${h}:00`);
-            if (h !== 18) slots.push(`${h}:30`);
+const OccupancyChart = ({ campusId = 'shibuya', currentOccupancy, historyData }) => {
+    const scrollContainerRef = React.useRef(null);
+
+    // Initial scroll to "Today"
+    React.useEffect(() => {
+        if (scrollContainerRef.current) {
+            const container = scrollContainerRef.current;
+            const todayElement = container.querySelector('[data-today="true"]');
+            if (todayElement) {
+                const scrollPos = todayElement.offsetLeft - (container.offsetWidth / 2);
+                container.scrollLeft = scrollPos;
+            }
         }
-        return slots;
-    }, []);
+    }, [campusId]);
+
+    // Data Configuration
+    const timeSlots = [
+        '10:00', '10:30', '11:00', '11:30', '12:00', '12:30', '13:00', '13:30',
+        '14:00', '14:30', '15:00', '15:30', '16:00', '16:30', '17:00', '17:30', '18:00'
+    ];
+
+    // Find current index to highlight
+    const currentIndex = React.useMemo(() => {
+        const now = new Date();
+        const currentHour = now.getHours();
+        const currentMin = now.getMinutes();
+        
+        return timeSlots.findIndex(slot => {
+            const [hStr, mStr] = slot.split(':');
+            const h = parseInt(hStr, 10);
+            const m = parseInt(mStr, 10);
+            if (h === currentHour) {
+                return currentMin >= 30 ? m === 30 : m === 0;
+            }
+            return false;
+        });
+    }, [timeSlots]);
 
     // Helper: Generate random data for one day (array of values matching timeSlots)
     const generateDayData = () => {
+        // Campus Variations
+        const campusBias = {
+            'shibuya': 0, // Standard
+            'shinjuku': -1, // Slightly less busy
+            'osaka': 2 // Busier (demo)
+        };
+        const bias = campusBias[campusId] || 0;
+
         return timeSlots.map(time => {
             const hour = parseInt(time.split(':')[0]);
             // Simulate peak hours around 12:00 and 17:00
-            let base = 1;
+            let base = 1 + bias;
             if (hour >= 11 && hour <= 13) base += 2; // Lunch peak
             if (hour >= 17) base += 2; // Evening peak
             
-            // Random noise
+            // Random noise (seeded by time + campus roughly)
             const noise = Math.floor(Math.random() * 3) - 1;
-            return Math.max(0, Math.min(5, base + noise));
+            return Math.max(0, Math.min(8, base + noise)); // Cap at 8 for variety
         });
     };
 
     // 1. Generate Past 30 Days Data
     const pastMonthData = React.useMemo(() => {
         return Array.from({ length: 30 }, () => generateDayData());
-    }, [timeSlots]);
+    }, [timeSlots, campusId]);
 
     // 2. Calculate Predicted (Average of past 30 days per slot)
     const predictedData = React.useMemo(() => {
@@ -44,12 +79,34 @@ const OccupancyChart = () => {
 
     // 3. Generate "Actual" Data (Today)
     const actualData = React.useMemo(() => {
+        // If historyData is provided, use it
+        if (historyData && historyData.length === timeSlots.length) {
+            return historyData.map((val, i) => {
+                // If it's the current slot, calculate Max(history, live)
+                if (i === currentIndex && currentOccupancy !== undefined && val !== null) {
+                    return Math.max(val, currentOccupancy);
+                }
+                // If live is valid but history is null (e.g. slight timing diff), use live?
+                // But history return null for FUTURE. Current slot should have value (0 or more) from hook.
+                if (i === currentIndex && val === null && currentOccupancy !== undefined) {
+                    return currentOccupancy; 
+                }
+                return val;
+            });
+        }
+
+        // Fallback to random/dummy if no history
         const fullDayData = generateDayData();
         const now = new Date();
         const currentHour = now.getHours();
         const currentMin = now.getMinutes();
 
         return fullDayData.map((val, i) => {
+            // Override with real-time data if this is the current slot
+            if (i === currentIndex && currentOccupancy !== undefined) {
+                return currentOccupancy;
+            }
+
             const timeStr = timeSlots[i];
             const [hStr, mStr] = timeStr.split(':');
             const slotHour = parseInt(hStr, 10);
@@ -61,33 +118,12 @@ const OccupancyChart = () => {
             }
             return val;
         });
-    }, [timeSlots]);
+    }, [timeSlots, currentIndex, currentOccupancy, campusId, historyData]); // Added dependencies
 
     // Determine Y-axis Max for scaling (ignore nulls)
     const validActuals = actualData.filter(d => d !== null);
     // Ensure max is at least 5 for scale
     const maxValue = Math.max(5, ...predictedData, ...validActuals) + 1;
-
-    // Find current index to highlight
-    const currentIndex = React.useMemo(() => {
-        const now = new Date();
-        const currentHour = now.getHours();
-        const currentMin = now.getMinutes();
-        
-        // Find the slot that matches the current time (rounding down to nearest 30min)
-        return timeSlots.findIndex(slot => {
-            const [hStr, mStr] = slot.split(':');
-            const h = parseInt(hStr, 10);
-            const m = parseInt(mStr, 10);
-            
-            // Check if match 
-            // Logic: if current time is 10:15, matches 10:00. if 10:45, matches 10:30.
-            if (h === currentHour) {
-                return currentMin >= 30 ? m === 30 : m === 0;
-            }
-            return false;
-        });
-    }, [timeSlots]);
 
     return (
         <div className="glass-panel" style={{ marginTop: '2rem', padding: '1.5rem' }}>
@@ -176,8 +212,8 @@ const OccupancyChart = () => {
                                             alignItems: 'flex-end',
                                             justifyContent: 'center'
                                         }}>
-                                            {/* Predicted Bar (Background) - Hide if current */}
-                                            {!isCurrent && (
+                                            {/* Predicted Bar (Background) - Show only for future (where actualData is null) */}
+                                            {actualData[i] === null && (
                                                 <div 
                                                     title={`予測: ${predictedData[i]}人`}
                                                     style={{
