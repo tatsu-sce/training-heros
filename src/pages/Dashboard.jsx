@@ -210,100 +210,54 @@ const Dashboard = () => {
   return (
     <div className="container" style={{ paddingTop: '2rem', paddingBottom: '4rem' }}>
       <header style={{
-        display: 'flex',
-        justifyContent: 'space-between',
+        display: 'grid',
+        gridTemplateColumns: 'min-content 1fr min-content',
         alignItems: 'center',
         marginBottom: '2rem',
-        flexWrap: 'wrap',
-        gap: '1rem'
+        gap: '1rem',
+        position: 'relative' // Ensure stacking context if needed
       }}>
-        <HamburgerMenu
-          onWorkout={() => navigate('/workout')}
-          onProfile={() => setIsProfileModalOpen(true)}
-          onSocial={() => setIsSocialModalOpen(true)}
-          onSupport={() => setIsInquiryModalOpen(true)}
-          onQR={() => setIsQRModalOpen(true)}
-          onSignOut={handleSignOut}
-        />
+        <div style={{ justifySelf: 'start' }}>
+          <HamburgerMenu
+            onWorkout={() => navigate('/workout')}
+            onProfile={() => setIsProfileModalOpen(true)}
+            onSocial={() => setIsSocialModalOpen(true)}
+            onSupport={() => setIsInquiryModalOpen(true)}
+            onQR={() => setIsQRModalOpen(true)}
+            onSignOut={handleSignOut}
+          />
+        </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
+        <div style={{ textAlign: 'center', justifySelf: 'center' }}>
+            <h1 className="gradient-text" style={{ fontSize: window.innerWidth < 400 ? '1.5rem' : '1.8rem', marginBottom: '0.2rem', lineHeight: '1', margin: 0 }}>UniFit</h1>
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', justifySelf: 'end' }}>
+          {/* Profile Button - New */}
           <button
-            onClick={() => setIsQRModalOpen(true)}
-            className="pulse-glow"
+            onClick={() => setIsProfileModalOpen(true)}
             style={{
-              width: '64px',
-              height: '64px',
-              borderRadius: '18px',
-              background: 'linear-gradient(135deg, var(--color-primary), var(--color-secondary))',
-              border: 'none',
-              color: 'white',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-              boxShadow: '0 8px 20px rgba(99, 102, 241, 0.3)',
-              position: 'relative',
-              overflow: 'hidden'
-            }}
-            title="Scan QR Code"
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-4px) scale(1.02)';
-              e.currentTarget.style.boxShadow = '0 12px 25px rgba(99, 102, 241, 0.5)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0) scale(1)';
-              e.currentTarget.style.boxShadow = '0 8px 20px rgba(99, 102, 241, 0.3)';
+               width: '42px',
+               height: '42px',
+               borderRadius: '50%',
+               background: profile?.is_present ? 'rgba(52, 211, 153, 0.2)' : 'rgba(255, 255, 255, 0.08)',
+               border: `1px solid ${profile?.is_present ? '#34d399' : 'rgba(255, 255, 255, 0.1)'}`,
+               color: profile?.is_present ? '#34d399' : 'white',
+               cursor: 'pointer',
+               display: 'flex',
+               alignItems: 'center',
+               justifyContent: 'center',
+               boxShadow: profile?.is_present ? '0 0 15px rgba(52, 211, 153, 0.4)' : 'none',
+               transition: 'all 0.3s ease'
             }}
           >
-            {/* Premium QR SVG Icon */}
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M3 3H9V9H3V3ZM5 5V7H7V5H5Z" fill="currentColor" />
-              <path d="M3 15H9V21H3V15ZM5 17V19H7V17H5Z" fill="currentColor" />
-              <path d="M15 3H21V9H15V3ZM17 5V7H19V5H17Z" fill="currentColor" />
-              <path d="M15 15H17V17H15V15Z" fill="currentColor" />
-              <path d="M17 17H19V19H17V17Z" fill="currentColor" />
-              <path d="M19 15H21V17H19V15Z" fill="currentColor" />
-              <path d="M15 19H17V21H15V19Z" fill="currentColor" />
-              <path d="M19 19H21V21H19V19Z" fill="currentColor" />
-              <path d="M11 11H13V13H11V11Z" fill="currentColor" />
-              <path d="M11 3H13V9H11V3Z" fill="currentColor" />
-              <path d="M3 11H9V13H3V11Z" fill="currentColor" />
-              <path d="M15 11H21V13H15V11Z" fill="currentColor" />
-              <path d="M11 15H13V21H11V15Z" fill="currentColor" />
-            </svg>
-
-            {/* Subtle Inner Glow Overlay */}
-            <div style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              background: 'linear-gradient(to bottom, rgba(255,255,255,0.2), transparent)',
-              pointerEvents: 'none'
-            }} />
+             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+             </svg>
           </button>
-          <div style={{ textAlign: 'right' }}>
-            <h1 className="gradient-text" style={{ fontSize: window.innerWidth < 400 ? '1.5rem' : '1.8rem', marginBottom: '0.2rem', lineHeight: '1' }}>UniFit</h1>
-            <p style={{ color: 'var(--color-text-muted)', fontSize: '0.75rem', margin: 0 }}>Next-Gen Fitness Tracker</p>
-            {profile?.is_present !== undefined && (
-              <span style={{
-                display: 'inline-block',
-                marginTop: '0.2rem',
-                padding: '1px 8px',
-                borderRadius: '20px',
-                fontSize: '0.65rem',
-                fontWeight: 'bold',
-                background: profile.is_present ? 'rgba(52, 211, 153, 0.15)' : 'rgba(156, 163, 175, 0.15)',
-                color: profile.is_present ? '#34d399' : '#9ca3af',
-                border: `1px solid ${profile.is_present ? 'rgba(52, 211, 153, 0.3)' : 'rgba(156, 163, 175, 0.3)'}`,
-                letterSpacing: '0.02em'
-              }}>
-                {profile.is_present ? '● CHECKED IN' : '○ AWAY'}
-              </span>
-            )}
-          </div>
+
+          {/* QR Button removed from here */}
         </div>
       </header>
 
@@ -326,6 +280,7 @@ const Dashboard = () => {
         currentGoal={currentGoal}
         mySchedule={mySchedule}
         onEditSchedule={() => setIsScheduleModalOpen(true)}
+        onSignOut={handleSignOut}
       />
       <CheckoutCorrectionModal
         isOpen={isCorrectionModalOpen}
@@ -418,7 +373,7 @@ const Dashboard = () => {
         }}>
           <div style={{ padding: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', zIndex: 10 }}>
             <h3 style={{ fontSize: '1.1rem' }}>My Avatar</h3>
-            <span style={{ fontSize: '0.8rem', background: 'rgba(99, 102, 241, 0.2)', color: '#818cf8', padding: '2px 10px', borderRadius: '2rem' }}>LV. {Math.floor(Object.values(muscleStats).reduce((a, b) => a + b, 0))}</span>
+
           </div>
 
           <div style={{ flex: 1, position: 'relative' }}>
@@ -452,6 +407,68 @@ const Dashboard = () => {
           </div>
         </div>
       </div>
+
+      {/* Floating QR Button */}
+      <button
+        onClick={() => setIsQRModalOpen(true)}
+        className="pulse-glow"
+        style={{
+          position: 'fixed',
+          bottom: '2rem',
+          right: '2rem',
+          width: '64px',
+          height: '64px',
+          borderRadius: '50%', // Circle for FAB
+          background: 'linear-gradient(135deg, var(--color-primary), var(--color-secondary))',
+          border: 'none',
+          color: 'white',
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          boxShadow: '0 8px 20px rgba(99, 102, 241, 0.4)',
+          zIndex: 100,
+          overflow: 'hidden'
+        }}
+        title="Scan QR Code"
+        onMouseEnter={(e) => {
+          e.currentTarget.style.transform = 'translateY(-4px) scale(1.05)';
+          e.currentTarget.style.boxShadow = '0 12px 25px rgba(99, 102, 241, 0.6)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = 'translateY(0) scale(1)';
+          e.currentTarget.style.boxShadow = '0 8px 20px rgba(99, 102, 241, 0.4)';
+        }}
+      >
+         {/* Premium QR SVG Icon */}
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M3 3H9V9H3V3ZM5 5V7H7V5H5Z" fill="currentColor" />
+          <path d="M3 15H9V21H3V15ZM5 17V19H7V17H5Z" fill="currentColor" />
+          <path d="M15 3H21V9H15V3ZM17 5V7H19V5H17Z" fill="currentColor" />
+          <path d="M15 15H17V17H15V15Z" fill="currentColor" />
+          <path d="M17 17H19V19H17V17Z" fill="currentColor" />
+          <path d="M19 15H21V17H19V15Z" fill="currentColor" />
+          <path d="M15 19H17V21H15V19Z" fill="currentColor" />
+          <path d="M19 19H21V21H19V19Z" fill="currentColor" />
+          <path d="M11 11H13V13H11V11Z" fill="currentColor" />
+          <path d="M11 3H13V9H11V3Z" fill="currentColor" />
+          <path d="M3 11H9V13H3V11Z" fill="currentColor" />
+          <path d="M15 11H21V13H15V11Z" fill="currentColor" />
+          <path d="M11 15H13V21H11V15Z" fill="currentColor" />
+        </svg>
+
+        {/* Subtle Inner Glow Overlay */}
+        <div style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'linear-gradient(to bottom, rgba(255,255,255,0.2), transparent)',
+            pointerEvents: 'none'
+        }} />
+      </button>
 
     </div>
   );

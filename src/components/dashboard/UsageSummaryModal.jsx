@@ -127,7 +127,7 @@ const UsageSummaryModal = ({ isOpen, onClose }) => {
                 onClick={e => e.stopPropagation()}
             >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                    <h2 style={{ fontSize: '1.5rem' }} className="gradient-text">Usage Summary</h2>
+                    <h2 style={{ fontSize: '1.5rem' }} className="gradient-text">サマリー</h2>
                     <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'white', fontSize: '1.5rem', cursor: 'pointer' }}>×</button>
                 </div>
 

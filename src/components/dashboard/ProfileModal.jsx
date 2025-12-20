@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Modal from '../ui/Modal';
 import { supabase } from '../../lib/supabaseClient';
 
-const ProfileModal = ({ isOpen, onClose, user, profile, currentGoal, mySchedule, onEditSchedule, isFriendProfile, onRemoveFriend }) => {
+const ProfileModal = ({ isOpen, onClose, user, profile, currentGoal, mySchedule, onEditSchedule, isFriendProfile, onRemoveFriend, onSignOut }) => {
     const [notificationEnabled, setNotificationEnabled] = useState(false);
     const [updating, setUpdating] = useState(false);
 
@@ -124,6 +124,33 @@ const ProfileModal = ({ isOpen, onClose, user, profile, currentGoal, mySchedule,
                         >
                             {updating ? 'Updating...' : (notificationEnabled ? '✓ Enabled' : 'Disabled')}
                         </button>
+                    </div>
+
+
+                    <div style={{ marginTop: '2rem', display: 'flex', justifyContent: 'center' }}>
+                         <button
+                            onClick={() => {
+                                if(window.confirm('ログアウトしますか？')) {
+                                    onSignOut();
+                                    onClose();
+                                }
+                            }}
+                            style={{
+                                background: 'transparent',
+                                border: '1px solid rgba(239, 68, 68, 0.4)',
+                                color: '#ef4444',
+                                padding: '0.6rem 2rem',
+                                borderRadius: '8px',
+                                fontSize: '0.9rem',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s',
+                                width: '100%'
+                            }}
+                            onMouseEnter={(e) => e.target.style.background = 'rgba(239, 68, 68, 0.1)'}
+                            onMouseLeave={(e) => e.target.style.background = 'transparent'}
+                         >
+                            Sign Out
+                         </button>
                     </div>
                 </div>
             )}
