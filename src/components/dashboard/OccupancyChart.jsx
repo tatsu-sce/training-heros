@@ -11,6 +11,8 @@ const OccupancyChart = ({ campusId = 'ookayama', currentOccupancy, historyData }
         return slots;
     }, []);
 
+
+
     // Helper: Generate random data for one day (array of values matching timeSlots)
     const generateDayData = () => {
         // Campus Variations
