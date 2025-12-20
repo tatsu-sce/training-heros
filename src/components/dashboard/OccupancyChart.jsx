@@ -13,6 +13,27 @@ const OccupancyChart = ({ campusId = 'ookayama', currentOccupancy, historyData }
 
 
 
+    // Find current index to highlight
+    const currentIndex = React.useMemo(() => {
+        const now = new Date();
+        const currentHour = now.getHours();
+        const currentMin = now.getMinutes();
+        
+        // Find the slot that matches the current time (rounding down to nearest 30min)
+        return timeSlots.findIndex(slot => {
+            const [hStr, mStr] = slot.split(':');
+            const h = parseInt(hStr, 10);
+            const m = parseInt(mStr, 10);
+            
+            // Check if match 
+            // Logic: if current time is 10:15, matches 10:00. if 10:45, matches 10:30.
+            if (h === currentHour) {
+                return currentMin >= 30 ? m === 30 : m === 0;
+            }
+            return false;
+        });
+    }, [timeSlots]);
+
     // Helper: Generate random data for one day (array of values matching timeSlots)
     const generateDayData = () => {
         // Campus Variations
